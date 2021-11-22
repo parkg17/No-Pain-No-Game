@@ -11,21 +11,22 @@
 #include "light.h"			// light
 #include "material.h"		// material
 #include "camera.h"			// camera
+#include "skybox.h"
 
 //*************************************
 // global constants - shader
 static const char* vert_shader_path = "shaders/trackball.vert";
 static const char* frag_shader_path = "shaders/trackball.frag";
-static const char* window_name		= "No Pain No Game";
+static const char* window_name = "No Pain No Game";
 
 //*************************************
 // global constants - object path
-static const char* background_path	= "images/background.jpg";
-static const char* thorn_obj		= "mesh/scrubPine.obj";
-static const char* player_obj		= "mesh/player/bunny.obj";
-static const char* cube_obj			= "mesh/block/cube.obj";
-static const char* enemy_obj		= "mesh/enemy/re-optimized sphere.obj";
-static const char* goal_obj			= "mesh/goal/sphere-cubecoords.obj";
+static const char* background_path = "images/background.jpg";
+static const char* thorn_obj = "mesh/scrubPine.obj";
+static const char* player_obj = "mesh/player/bunny.obj";
+static const char* cube_obj = "mesh/block/cube.obj";
+static const char* enemy_obj = "mesh/enemy/re-optimized sphere.obj";
+static const char* goal_obj = "mesh/goal/sphere-cubecoords.obj";
 
 //*************************************
 // window objects
@@ -51,14 +52,15 @@ bool	b_wireframe = false;
 
 //*************************************
 // scene objects
-mesh2*		pMesh_player = nullptr;
-mesh2*		pMesh_thorn = nullptr;
-mesh2*		pMesh_cube = nullptr;
-mesh2*		pMesh_enemy = nullptr;
-mesh2*		pMesh_goal = nullptr;
+mesh2* pMesh_player = nullptr;
+mesh2* pMesh_thorn = nullptr;
+mesh2* pMesh_cube = nullptr;
+mesh2* pMesh_enemy = nullptr;
+mesh2* pMesh_goal = nullptr;
 material_t	material;
 light_t		light;
 camera		cam;
+skybox		sky;
 
 //*************************************
 // holder of vertices and indices of a unit circle
@@ -109,9 +111,11 @@ void render()
 	// clear screen (with background color) and clear depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	sky.render(cam.view_matrix, cam.projection_matrix);
+
 	// notify GL that we use our own program
 	glUseProgram(program);
-	
+
 	// Background
 	for (auto& bg : backgrounds)
 	{
@@ -292,10 +296,11 @@ void print_help()
 
 std::vector<vertex> create_background()
 {
+	return {};
 	float bg_size = 1.0f;
 	std::vector<vertex> v = { { vec3(0), vec3(0, 0, 1.0f), vec2(0.5f) } }; // origin
-	v.push_back({ vec3(bg_size*2,0,0), vec3(0, 0,1.0f), vec2(0.5f) });
-	v.push_back({ vec3(bg_size*2,bg_size,0), vec3(0, 0,1.0f), vec2(0.5f) });
+	v.push_back({ vec3(bg_size * 2,0,0), vec3(0, 0,1.0f), vec2(0.5f) });
+	v.push_back({ vec3(bg_size * 2,bg_size,0), vec3(0, 0,1.0f), vec2(0.5f) });
 	v.push_back({ vec3(0,bg_size,0), vec3(0, 0, 1.0f), vec2(0.5f) });
 	return v;
 }
@@ -413,13 +418,16 @@ bool user_init()
 	glClearColor(39 / 255.0f, 40 / 255.0f, 34 / 255.0f, 1.0f);	// set clear color
 	glEnable(GL_CULL_FACE);								// turn on backface culling
 	glEnable(GL_DEPTH_TEST);								// turn on depth tests
-	glEnable(GL_TEXTURE_2D);		
+	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 
 	// modeling background backbone
 	Background = cg_create_texture(background_path, true); if (!Background) return false;
 	unit_background_vertices = std::move(create_background());
 	bg_update_vertex_buffer(unit_background_vertices);
+
+	sky.init();
+	sky.load();
 
 	// load the mesh
 	pMesh_player = load_model(player_obj);
