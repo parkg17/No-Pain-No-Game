@@ -2,7 +2,6 @@
 #ifndef __BLOCK_H__
 #define __BLOCK_H__
 
-float bcf = 0.25f; // block_size_factor
 
 struct block_t
 {
@@ -19,6 +18,8 @@ struct block_t
 inline std::vector<block_t> create_blocks()
 {
 	int num_cnt = 0;
+	float bcf = 0.25f; // block_size_factor
+
 	std::vector<block_t> blocks;
 	std::vector<block_t> b(42);
 

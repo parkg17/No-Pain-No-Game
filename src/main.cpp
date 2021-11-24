@@ -11,22 +11,22 @@
 #include "light.h"			// light
 #include "material.h"		// material
 #include "camera.h"			// camera
-#include "skybox.h"
+#include "skybox.h"			// skybox
 
 //*************************************
 // global constants - shader
 static const char* vert_shader_path = "shaders/trackball.vert";
 static const char* frag_shader_path = "shaders/trackball.frag";
-static const char* window_name = "No Pain No Game";
+static const char* window_name		= "No Pain No Game";
 
 //*************************************
 // global constants - object path
-static const char* background_path = "images/background.jpg";
-static const char* thorn_obj = "mesh/scrubPine.obj";
-static const char* player_obj = "mesh/player/bunny.obj";
-static const char* cube_obj = "mesh/block/cube.obj";
-static const char* enemy_obj = "mesh/enemy/re-optimized sphere.obj";
-static const char* goal_obj = "mesh/goal/sphere-cubecoords.obj";
+static const char* background_path	= "images/background.jpg";
+static const char* thorn_obj		= "mesh/scrubPine.obj";
+static const char* player_obj		= "mesh/player/bunny.obj";
+static const char* cube_obj			= "mesh/block/cube.obj";
+static const char* enemy_obj		= "mesh/enemy/re-optimized sphere.obj";
+static const char* goal_obj			= "mesh/goal/sphere-cubecoords.obj";
 
 //*************************************
 // window objects
@@ -39,28 +39,45 @@ GLuint	program = 0;		// ID holder for GPU program
 GLuint	bg_vertex_array = 0;	// ID holder for vertex array object
 GLuint	Background = 0;
 
+//background_t backgrounds;
+
 //*************************************
 // global variables
 int		frame = 0;						// index of rendering frames
 float	t = 0.0f;						// current simulation parameter
+float	little_time;
 double	last_time;						// time variable to run the program by time not frame unit.
 bool	b_index_buffer = true;			// use index buffering?
-uint	is_move = 3;
+bool	is_game = false;
+
 #ifndef GL_ES_VERSION_2_0
 bool	b_wireframe = false;
 #endif
 
 //*************************************
 // scene objects
-mesh2* pMesh_player = nullptr;
-mesh2* pMesh_thorn = nullptr;
-mesh2* pMesh_cube = nullptr;
-mesh2* pMesh_enemy = nullptr;
-mesh2* pMesh_goal = nullptr;
+mesh2*		pMesh_player = nullptr;
+mesh2*		pMesh_thorn = nullptr;
+mesh2*		pMesh_cube = nullptr;
+mesh2*		pMesh_enemy = nullptr;
+mesh2*		pMesh_goal = nullptr;
 material_t	material;
 light_t		light;
 camera		cam;
 skybox		sky;
+
+//*************************************
+//render function
+void render_bg(float t, std::vector<background_t>& background,GLuint program, GLuint Background, GLuint bg_vertex_array);
+void render_obstacle(float t, std::vector<obstacle_t>& obstacles, GLuint program, mesh2* pMesh_thorn);
+void render_enemy(float t, std::vector<enemy_t>& enemies, GLuint program, mesh2* pMesh_enemy);
+void render_goal(float t, std::vector<goal_t>& goal, GLuint program, mesh2* pMesh_goal);
+void render_block(float t, std::vector<block_t>& blocks, GLuint program, mesh2* pMesh_cube);
+void render_player(float t, std::vector<background_t>& backgrounds, std::vector<enemy_t>& enemies,
+	std::vector<obstacle_t>& obstacles,std::vector<goal_t>& goal, std::vector<model_t>& models, GLuint program, mesh2* pMesh_player);
+
+bool init_text();
+void render_text(std::string text, GLint x, GLint y, GLfloat scale, vec4 color, GLfloat dpi_scale = 1.0f);
 
 //*************************************
 // holder of vertices and indices of a unit circle
@@ -102,178 +119,44 @@ void update()
 void render()
 {
 	/* Computes movements based on time difference */
+
 	double current_time = glfwGetTime();
+	little_time = float(current_time - last_time);
 	if (current_time - last_time < 0.0005) return;
 	else {
 		last_time = current_time;
-	}
-
+	}	
 	// clear screen (with background color) and clear depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	sky.render(cam.view_matrix, cam.projection_matrix);
+	float dpi_scale = cg_get_dpi_scale();
 
 	// notify GL that we use our own program
 	glUseProgram(program);
+	if (is_game) {
+		
+		// Background
+		sky.load(); // bg가 랜더되어서 sky박스가 안보임.
 
-	// Background
-	for (auto& bg : backgrounds)
-	{
-		bg.update(t);
-		GLint uloc;
-		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, bg.model_matrix);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Background);
-		glUniform1i(glGetUniformLocation(program, "MODE"), 1);
-		glUniform1i(glGetUniformLocation(program, "TEX"), 0);
-		glBindVertexArray(bg_vertex_array);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		render_bg(t, backgrounds, program, Background, bg_vertex_array);
+		// Obtacle 
+		render_obstacle(t, obstacles, program, pMesh_thorn);
+		// enemies
+		render_enemy(t, enemies, program, pMesh_enemy);
+		// goal
+		render_goal(t, goal, program, pMesh_goal);
+		// blocks
+		render_block(t, blocks, program, pMesh_cube);
+		// Player
+		render_player(little_time, backgrounds, enemies, obstacles, goal, models, program, pMesh_player);
+		// swap front and back buffers, and display to screen
 	}
-
-	// Obtacle 
-	for (auto& o : obstacles)
-	{
-		o.update(t);
-		GLint uloc;
-		uloc = glGetUniformLocation(program, "solid_color");		if (uloc > -1) glUniform4fv(uloc, 1, o.color);	// pointer version
-		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, o.model_matrix);
-		glUniform1i(glGetUniformLocation(program, "MODE"), 1);
-		glBindVertexArray(pMesh_thorn->vertex_array);
-		for (size_t k = 0, kn = pMesh_thorn->geometry_list.size(); k < kn; k++) {
-			geometry& g = pMesh_thorn->geometry_list[k];
-
-			if (g.mat->textures.diffuse) {
-				glBindTexture(GL_TEXTURE_2D, g.mat->textures.diffuse->id);
-				glUniform1i(glGetUniformLocation(program, "TEX"), 0);	 // GL_TEXTURE0
-				glUniform1i(glGetUniformLocation(program, "use_texture"), true);
-			}
-			else {
-				glUniform4fv(glGetUniformLocation(program, "diffuse"), 1, (const float*)(&g.mat->diffuse));
-				glUniform1i(glGetUniformLocation(program, "use_texture"), false);
-			}
-
-			// render vertices: trigger shader programs to process vertex data
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh_thorn->index_buffer);
-			glDrawElements(GL_TRIANGLES, g.index_count, GL_UNSIGNED_INT, (GLvoid*)(g.index_start * sizeof(GLuint)));
-		}
+	else
+	{		
+		render_text("Hello text!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
 	}
-
-	// enemies
-	for (auto& en : enemies)
-	{
-		en.update(t);
-		GLint uloc;
-		uloc = glGetUniformLocation(program, "solid_color");		if (uloc > -1) glUniform4fv(uloc, 1, en.color);	// pointer version
-		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, en.model_matrix);
-		glUniform1i(glGetUniformLocation(program, "MODE"), 1);
-		glBindVertexArray(pMesh_enemy->vertex_array);
-		for (size_t k = 0, kn = pMesh_enemy->geometry_list.size(); k < kn; k++) {
-			geometry& g = pMesh_enemy->geometry_list[k];
-
-			if (g.mat->textures.diffuse) {
-				glBindTexture(GL_TEXTURE_2D, g.mat->textures.diffuse->id);
-				glUniform1i(glGetUniformLocation(program, "TEX"), 0);	 // GL_TEXTURE0
-				glUniform1i(glGetUniformLocation(program, "use_texture"), true);
-			}
-			else {
-				glUniform4fv(glGetUniformLocation(program, "diffuse"), 1, (const float*)(&g.mat->diffuse));
-				glUniform1i(glGetUniformLocation(program, "use_texture"), false);
-			}
-
-			// render vertices: trigger shader programs to process vertex data
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh_enemy->index_buffer);
-			glDrawElements(GL_TRIANGLES, g.index_count, GL_UNSIGNED_INT, (GLvoid*)(g.index_start * sizeof(GLuint)));
-		}
-	}
-
-	// goal
-	for (auto& g : goal)
-	{
-		g.update(t);
-		GLint uloc;
-		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, g.model_matrix);
-		glUniform1i(glGetUniformLocation(program, "MODE"), 1);
-		glBindVertexArray(pMesh_goal->vertex_array);
-		for (size_t k = 0, kn = pMesh_goal->geometry_list.size(); k < kn; k++) {
-			geometry& g = pMesh_goal->geometry_list[k];
-
-			if (g.mat->textures.diffuse) {
-				glBindTexture(GL_TEXTURE_2D, g.mat->textures.diffuse->id);
-				glUniform1i(glGetUniformLocation(program, "TEX"), 0);	 // GL_TEXTURE0
-				glUniform1i(glGetUniformLocation(program, "use_texture"), true);
-			}
-			else {
-				glUniform4fv(glGetUniformLocation(program, "diffuse"), 1, (const float*)(&g.mat->diffuse));
-				glUniform1i(glGetUniformLocation(program, "use_texture"), false);
-			}
-
-			// render vertices: trigger shader programs to process vertex data
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh_goal->index_buffer);
-			glDrawElements(GL_TRIANGLES, g.index_count, GL_UNSIGNED_INT, (GLvoid*)(g.index_start * sizeof(GLuint)));
-		}
-	}
-
-	// blocks
-	for (auto& b : blocks)
-	{
-		b.update(t);
-		GLint uloc;
-		uloc = glGetUniformLocation(program, "solid_color");		if (uloc > -1) glUniform4fv(uloc, 1, b.color);	// pointer version
-		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, b.model_matrix);
-		glUniform1i(glGetUniformLocation(program, "MODE"), 1);
-		glBindVertexArray(pMesh_cube->vertex_array);
-		for (size_t k = 0, kn = pMesh_cube->geometry_list.size(); k < kn; k++) {
-			geometry& g = pMesh_cube->geometry_list[k];
-
-			if (g.mat->textures.diffuse) {
-				glBindTexture(GL_TEXTURE_2D, g.mat->textures.diffuse->id);
-				glUniform1i(glGetUniformLocation(program, "TEX"), 0);	 // GL_TEXTURE0
-				glUniform1i(glGetUniformLocation(program, "use_texture"), true);
-			}
-			else {
-				glUniform4fv(glGetUniformLocation(program, "diffuse"), 1, (const float*)(&g.mat->diffuse));
-				glUniform1i(glGetUniformLocation(program, "use_texture"), false);
-			}
-
-			// render vertices: trigger shader programs to process vertex data
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh_cube->index_buffer);
-			glDrawElements(GL_TRIANGLES, g.index_count, GL_UNSIGNED_INT, (GLvoid*)(g.index_start * sizeof(GLuint)));
-		}
-	}
-
-	// Player
-	for (auto& m : models)
-	{
-		if (!m.is_stop) {
-			m.move(is_move, t);
-			m.check_collision(obstacles, enemies, goal, backgrounds, 0);
-			m.update(t);
-		}
-		GLint uloc;
-		uloc = glGetUniformLocation(program, "solid_color");		if (uloc > -1) glUniform4fv(uloc, 1, m.color);	// pointer version
-		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, m.model_matrix);
-		glUniform1i(glGetUniformLocation(program, "MODE"), 0);
-		glBindVertexArray(pMesh_player->vertex_array);
-		for (size_t k = 0, kn = pMesh_player->geometry_list.size(); k < kn; k++) {
-			geometry& g = pMesh_player->geometry_list[k];
-
-			if (g.mat->textures.diffuse) {
-				glBindTexture(GL_TEXTURE_2D, g.mat->textures.diffuse->id);
-				glUniform1i(glGetUniformLocation(program, "TEX"), 0);	 // GL_TEXTURE0
-				glUniform1i(glGetUniformLocation(program, "use_texture"), true);
-			}
-			else {
-				glUniform4fv(glGetUniformLocation(program, "diffuse"), 1, (const float*)(&g.mat->diffuse));
-				glUniform1i(glGetUniformLocation(program, "use_texture"), false);
-			}
-
-			// render vertices: trigger shader programs to process vertex data
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pMesh_player->index_buffer);
-			glDrawElements(GL_TRIANGLES, g.index_count, GL_UNSIGNED_INT, (GLvoid*)(g.index_start * sizeof(GLuint)));
-		}
-	}
-
-	// swap front and back buffers, and display to screen
+	
 	glfwSwapBuffers(window);
 }
 
@@ -296,11 +179,10 @@ void print_help()
 
 std::vector<vertex> create_background()
 {
-	return {};
 	float bg_size = 1.0f;
 	std::vector<vertex> v = { { vec3(0), vec3(0, 0, 1.0f), vec2(0.5f) } }; // origin
-	v.push_back({ vec3(bg_size * 2,0,0), vec3(0, 0,1.0f), vec2(0.5f) });
-	v.push_back({ vec3(bg_size * 2,bg_size,0), vec3(0, 0,1.0f), vec2(0.5f) });
+	v.push_back({ vec3(bg_size*2,0,0), vec3(0, 0,1.0f), vec2(0.5f) });
+	v.push_back({ vec3(bg_size*2,bg_size,0), vec3(0, 0,1.0f), vec2(0.5f) });
 	v.push_back({ vec3(0,bg_size,0), vec3(0, 0, 1.0f), vec2(0.5f) });
 	return v;
 }
@@ -374,24 +256,48 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 		}
 #endif
 		else if (key == GLFW_KEY_W) { // Upward
-			is_move = 0;
-			//move_model(0);
+			for (auto& m : models)
+			{
+				m.set_move(0);
+			}			
 		}
 		else if (key == GLFW_KEY_A) { // Left
-			is_move = 1;
-			//move_model(1);
+			for (auto& m : models)
+			{
+				m.set_move(1);
+			}
 		}
 		else if (key == GLFW_KEY_D) { // Right
-			is_move = 2;
-			//move_model(2);
+			for (auto& m : models)
+			{
+				m.set_move(2);
+			}
 		}
-		else if (key == GLFW_KEY_S) { // Right
-			is_move = 4;
+		else if (key == GLFW_KEY_ENTER) { // start
+			is_game = true;
 		}
+		
 	}
 	else if (action == GLFW_RELEASE)
 	{
-		is_move = 3;
+	if (key == GLFW_KEY_W) { // Upward
+		for (auto& m : models)
+		{
+			m.set_move(3);
+		}
+	}
+	else if (key == GLFW_KEY_A) { // Left
+		for (auto& m : models)
+		{
+			m.set_move(4);
+		}
+	}
+	else if (key == GLFW_KEY_D) { // Right
+		for (auto& m : models)
+		{
+			m.set_move(4);
+		}
+	}
 	}
 }
 
@@ -418,7 +324,7 @@ bool user_init()
 	glClearColor(39 / 255.0f, 40 / 255.0f, 34 / 255.0f, 1.0f);	// set clear color
 	glEnable(GL_CULL_FACE);								// turn on backface culling
 	glEnable(GL_DEPTH_TEST);								// turn on depth tests
-	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);		
 	glActiveTexture(GL_TEXTURE0);
 
 	// modeling background backbone
@@ -427,8 +333,10 @@ bool user_init()
 	bg_update_vertex_buffer(unit_background_vertices);
 
 	sky.init();
-	sky.load();
+	
+	
 
+	
 	// load the mesh
 	pMesh_player = load_model(player_obj);
 	if (pMesh_player == nullptr) { printf("Unable to load mesh\n"); return false; }
@@ -442,6 +350,7 @@ bool user_init()
 	if (pMesh_goal == nullptr) { printf("Unable to load mesh\n"); return false; }
 
 	last_time = glfwGetTime();
+	if (!init_text()) return false;
 
 	return true;
 }

@@ -2,7 +2,7 @@
 #ifndef __OBSTACLE_H__
 #define __OBSTACLE_H__
 
-float size_factor = 0.002f;
+
 
 struct obstacle_t
 {
@@ -19,6 +19,7 @@ struct obstacle_t
 inline std::vector<obstacle_t> create_obstacles()
 {
 	int num_cnt = 0;
+	float size_factor = 0.002f;
 	std::vector<obstacle_t> obstacles;
 	std::vector<obstacle_t> o(4);
 

@@ -2,7 +2,7 @@
 #ifndef __GOAL_H__
 #define __GOAL_H__
 
-float gsf = 0.1f; // goal_size_factor
+
 
 struct goal_t
 {
@@ -17,6 +17,7 @@ struct goal_t
 inline std::vector<goal_t> create_goal()
 {
 	int num_cnt = 0;
+	float gsf = 0.1f; // goal_size_factor
 	std::vector<goal_t> goal;
 	std::vector<goal_t> g(1);
 

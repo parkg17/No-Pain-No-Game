@@ -2,7 +2,7 @@
 #ifndef __ENEMY_H__
 #define __ENEMY_H__
 
-float esf = 0.01f; // enemy_size_factor
+
 
 struct enemy_t
 {
@@ -20,6 +20,7 @@ struct enemy_t
 inline std::vector<enemy_t> create_enemies()
 {
 	int num_cnt = 0;
+	float esf = 0.01f; // enemy_size_factor
 	std::vector<enemy_t> enemies;
 	std::vector<enemy_t> c(2);
 

@@ -9,7 +9,8 @@ struct model_t
 	float	radius = 1.0f;			// Radius
 	float	theta = 0.0f;			// Individual rotation angle
 	float	orbit = 1.0f;			// Distance between the sun and the planet
-	bool	is_jump = false;
+	uint	is_move = 3;
+	bool	is_jumping = false;
 	bool	is_stop = false;
 	float	acc = 0.0f;
 	vec4	color;					// RGBA color in [0,1]
@@ -19,7 +20,10 @@ struct model_t
 	void	check_collision(std::vector<obstacle_t>& circles, std::vector<enemy_t>& enemies,
 							std::vector<goal_t>& goal, std::vector<background_t>& bg, int stage);
 	void	move(int direction, float t);
+	uint	get_move();
+	void	set_move(uint n);
 	void	update(float t);
+
 };
 
 inline std::vector<model_t> create_models() // Actually, Shphere not circle
@@ -86,62 +90,64 @@ inline void model_t::check_collision(std::vector<obstacle_t>& obstacles, std::ve
 	}
 	
 	// Background
-	if ((bg1.left > center.x + velocity.x) && (velocity.x < 0)) {
+	if ((bg1.left > center.x) && (velocity.x < 0)) {
 		velocity.x = 0;
 	}
-	if ((bg1.right < center.x + velocity.x) && (velocity.x > 0)) {
+	if ((bg1.right < center.x) && (velocity.x > 0)) {
 		velocity.x = 0;
 	}
-	if ((bg1.top < center.y + velocity.y) && (velocity.y > 0)) {
+	if ((bg1.top < center.y ) && (velocity.y > 0)) {
+		center.y = bg1.top;
+	}
+	if ((bg1.bottom > center.y) && (velocity.y < 0 )) {
+		center.y = bg1.bottom;
 		velocity.y = 0;
-	}
-	if ((bg1.bottom > center.y + velocity.y) || (bg1.bottom > center.y)) {
-		if (velocity.y < 0) {
-			velocity.y = 0;
-			acc = 0;
-			is_jump = false;
-		}
+		is_jumping = false;
 	}
 }
 
 inline void model_t::move(int direction, float t) {
 	if (is_stop) return;
 	if (direction == 0) {
-		if (is_jump == false) {
-			is_jump = true;
-			velocity.y = 0.005f;
+		if (!is_jumping) {
+			velocity.y = 2.0f;
+			is_jumping = true;
 		}
 	}
 	else if (direction == 1) {
-		velocity.x = -0.001f;
+		velocity.x = -1.0f;
 	}
 	else if (direction == 2) {
-		velocity.x = 0.001f;
+		velocity.x = 1.0f;
+	}	
+	else if (direction == 3){
+		
 	}
 	else if (direction == 4) {
-		velocity.y = -0.001f;
-	}
-	else {
 		velocity.x = 0;
-		if (!is_jump) {
-			velocity.y = 0;
-		}
 	}
-
-	if (is_jump) {
-		//acc += 0.000002f;
-		acc = 0.00001f;
-		velocity.y -= acc;
-	}
+	
 }
+
+inline uint model_t::get_move()
+{
+	return is_move;
+}
+
+inline void model_t::set_move(uint n)
+{
+	is_move = n;
+}
+
 
 inline void model_t::update(float t)
 {
 	float c = cos(t);	// rotation
 	float s = sin(t);	// rotation
-
-	center.x += velocity.x;
-	center.y += velocity.y;
+	float gravity = 1.8f;
+	velocity.y -= gravity * t;
+	center.x += velocity.x*t;
+	center.y += velocity.y*t;	
 
 	mat4 scale_matrix =
 	{
