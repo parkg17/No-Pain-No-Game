@@ -49,6 +49,8 @@ float	little_time;
 double	last_time;						// time variable to run the program by time not frame unit.
 bool	b_index_buffer = true;			// use index buffering?
 bool	is_game = false;
+bool	is_help = false;
+float	blinking = 0.0f;
 
 #ifndef GL_ES_VERSION_2_0
 bool	b_wireframe = false;
@@ -94,6 +96,7 @@ void update()
 {
 	// update global simulation parameter
 	t = float(glfwGetTime()) * 0.4f;
+	blinking = abs(sin(float(glfwGetTime()) * 2.5f));
 
 	cam.aspect = window_size.x / float(window_size.y);
 	cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
@@ -129,14 +132,14 @@ void render()
 	// clear screen (with background color) and clear depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (is_game) {
+	if (is_game == true && is_help == false) {
 		sky.render(cam.view_matrix, cam.projection_matrix);
 	}
 	float dpi_scale = cg_get_dpi_scale();
 
 	// notify GL that we use our own program
 	glUseProgram(program);
-	if (is_game) {
+	if (is_game == true && is_help == false) {
 
 		// render_bg(t, backgrounds, program, Background, bg_vertex_array);
 		// Obtacle 
@@ -152,8 +155,18 @@ void render()
 		// swap front and back buffers, and display to screen
 	}
 	else
-	{
-		render_text("Hello text!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
+	{		
+		if (is_help) {
+			render_text("No Pain No Game!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
+			render_text("W to Jump A to move left D to move right", 100, 200, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f), dpi_scale);
+			render_text("Press F1 to title", 100, 300, 0.6f, vec4(0.5f, 0.7f, 0.7f, 1.0f), dpi_scale);
+		}
+		else
+		{
+			render_text("No Pain No Game!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
+			render_text("Press F1 to show help", 100, 200, 0.6f, vec4(1.0f, 0.8f, 0.1f, 0.4f), dpi_scale);
+			render_text("Press Enter to start game", 100, 600, 0.6f, vec4(0.5f, 0.7f, 0.7f, blinking), dpi_scale);
+		}
 	}
 
 	glfwSwapBuffers(window);
@@ -239,8 +252,7 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{
-		if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)	glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (key == GLFW_KEY_H || key == GLFW_KEY_F1)	print_help();
+		if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)	glfwSetWindowShouldClose(window, GL_TRUE);		
 		else if (key == GLFW_KEY_R) // Added key with Reset fucntion
 		{
 			reset_game();
@@ -272,10 +284,12 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 				m.set_move(2);
 			}
 		}
-		else if (key == GLFW_KEY_ENTER) { // start
+		else if (key == GLFW_KEY_ENTER && is_help == false) { // start
 			is_game = true;
 		}
-
+		else if(key == GLFW_KEY_F1) { // help
+			is_help = !is_help;
+		}
 	}
 	else if (action == GLFW_RELEASE)
 	{
@@ -321,10 +335,12 @@ bool user_init()
 	// init GL states
 	glLineWidth(1.0f);
 	glClearColor(39 / 255.0f, 40 / 255.0f, 34 / 255.0f, 1.0f);	// set clear color
+	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);								// turn on backface culling
 	glEnable(GL_DEPTH_TEST);								// turn on depth tests
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// modeling background backbone
 	Background = cg_create_texture(background_path, true); if (!Background) return false;
@@ -333,8 +349,6 @@ bool user_init()
 
 	sky.init();
 	sky.load();
-
-
 
 
 	// load the mesh

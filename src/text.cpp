@@ -11,7 +11,7 @@ GLuint		program_text;	// GPU program for text render
 
 static const char*	vert_text_path	= "shaders/text.vert";		// text vertex shaders
 static const char*	frag_text_path	= "shaders/text.frag";		// text fragment shaders
-static const char*	font_path		= "fonts/consola.ttf";		// from Windows/font/
+static const char*	font_path		= "../bin/fonts/consola.ttf";		// from Windows/font/
 
 struct stbtt_char_t
 {
@@ -77,13 +77,15 @@ void create_font_textures()
 
 bool init_text()
 {
-	font_path = absolute_path(font_path);
+	//font_path = absolute_path(font_path);
+
 	if(access(font_path,0)!=0){ printf( "%s(): %s not exists\n", __func__, font_path ); return false; }
 	FILE* fp = fopen( font_path, "rb" ); if(!fp){ printf( "%s(): Unable to open %s\n", __func__, font_path ); return false; }
 	
 	fseek( fp, 0, SEEK_END ); size_t size = ftell( fp ); fseek( fp, 0, SEEK_SET );
 	unsigned char* font_buffer = (unsigned char*) malloc(size);
-	std::size_t read_size = fread( font_buffer, 1, size, fp ); // assert( read_size == size );
+	std::size_t read_size = fread( font_buffer, 1, size, fp ); 
+	//assert( read_size == size );
 	fclose( fp );
 
 	// Initialize stb truetype

@@ -125,7 +125,7 @@ inline void model_t::move(int direction, float t) {
 	}
 	else if (direction == 4) {
 		velocity.x = 0;
-	}
+	} 
 	
 }
 
