@@ -17,16 +17,16 @@
 // global constants - shader
 static const char* vert_shader_path = "shaders/trackball.vert";
 static const char* frag_shader_path = "shaders/trackball.frag";
-static const char* window_name		= "No Pain No Game";
+static const char* window_name = "No Pain No Game";
 
 //*************************************
 // global constants - object path
-static const char* background_path	= "images/background.jpg";
-static const char* thorn_obj		= "mesh/scrubPine.obj";
-static const char* player_obj		= "mesh/player/bunny.obj";
-static const char* cube_obj			= "mesh/block/cube.obj";
-static const char* enemy_obj		= "mesh/enemy/re-optimized sphere.obj";
-static const char* goal_obj			= "mesh/goal/sphere-cubecoords.obj";
+static const char* background_path = "images/background.jpg";
+static const char* thorn_obj = "mesh/scrubPine.obj";
+static const char* player_obj = "mesh/player/bunny.obj";
+static const char* cube_obj = "mesh/block/cube.obj";
+static const char* enemy_obj = "mesh/enemy/re-optimized sphere.obj";
+static const char* goal_obj = "mesh/goal/sphere-cubecoords.obj";
 
 //*************************************
 // window objects
@@ -56,11 +56,11 @@ bool	b_wireframe = false;
 
 //*************************************
 // scene objects
-mesh2*		pMesh_player = nullptr;
-mesh2*		pMesh_thorn = nullptr;
-mesh2*		pMesh_cube = nullptr;
-mesh2*		pMesh_enemy = nullptr;
-mesh2*		pMesh_goal = nullptr;
+mesh2* pMesh_player = nullptr;
+mesh2* pMesh_thorn = nullptr;
+mesh2* pMesh_cube = nullptr;
+mesh2* pMesh_enemy = nullptr;
+mesh2* pMesh_goal = nullptr;
 material_t	material;
 light_t		light;
 camera		cam;
@@ -68,13 +68,13 @@ skybox		sky;
 
 //*************************************
 //render function
-void render_bg(float t, std::vector<background_t>& background,GLuint program, GLuint Background, GLuint bg_vertex_array);
+void render_bg(float t, std::vector<background_t>& background, GLuint program, GLuint Background, GLuint bg_vertex_array);
 void render_obstacle(float t, std::vector<obstacle_t>& obstacles, GLuint program, mesh2* pMesh_thorn);
 void render_enemy(float t, std::vector<enemy_t>& enemies, GLuint program, mesh2* pMesh_enemy);
 void render_goal(float t, std::vector<goal_t>& goal, GLuint program, mesh2* pMesh_goal);
 void render_block(float t, std::vector<block_t>& blocks, GLuint program, mesh2* pMesh_cube);
 void render_player(float t, std::vector<background_t>& backgrounds, std::vector<enemy_t>& enemies,
-	std::vector<obstacle_t>& obstacles,std::vector<goal_t>& goal, std::vector<model_t>& models, GLuint program, mesh2* pMesh_player);
+	std::vector<obstacle_t>& obstacles, std::vector<goal_t>& goal, std::vector<model_t>& models, GLuint program, mesh2* pMesh_player);
 
 bool init_text();
 void render_text(std::string text, GLint x, GLint y, GLfloat scale, vec4 color, GLfloat dpi_scale = 1.0f);
@@ -125,21 +125,20 @@ void render()
 	if (current_time - last_time < 0.0005) return;
 	else {
 		last_time = current_time;
-	}	
+	}
 	// clear screen (with background color) and clear depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	sky.render(cam.view_matrix, cam.projection_matrix);
+	if (is_game) {
+		sky.render(cam.view_matrix, cam.projection_matrix);
+	}
 	float dpi_scale = cg_get_dpi_scale();
 
 	// notify GL that we use our own program
 	glUseProgram(program);
 	if (is_game) {
-		
-		// Background
-		sky.load(); // bg가 랜더되어서 sky박스가 안보임.
 
-		render_bg(t, backgrounds, program, Background, bg_vertex_array);
+		// render_bg(t, backgrounds, program, Background, bg_vertex_array);
 		// Obtacle 
 		render_obstacle(t, obstacles, program, pMesh_thorn);
 		// enemies
@@ -153,10 +152,10 @@ void render()
 		// swap front and back buffers, and display to screen
 	}
 	else
-	{		
+	{
 		render_text("Hello text!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
 	}
-	
+
 	glfwSwapBuffers(window);
 }
 
@@ -181,8 +180,8 @@ std::vector<vertex> create_background()
 {
 	float bg_size = 1.0f;
 	std::vector<vertex> v = { { vec3(0), vec3(0, 0, 1.0f), vec2(0.5f) } }; // origin
-	v.push_back({ vec3(bg_size*2,0,0), vec3(0, 0,1.0f), vec2(0.5f) });
-	v.push_back({ vec3(bg_size*2,bg_size,0), vec3(0, 0,1.0f), vec2(0.5f) });
+	v.push_back({ vec3(bg_size * 2,0,0), vec3(0, 0,1.0f), vec2(0.5f) });
+	v.push_back({ vec3(bg_size * 2,bg_size,0), vec3(0, 0,1.0f), vec2(0.5f) });
 	v.push_back({ vec3(0,bg_size,0), vec3(0, 0, 1.0f), vec2(0.5f) });
 	return v;
 }
@@ -259,7 +258,7 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 			for (auto& m : models)
 			{
 				m.set_move(0);
-			}			
+			}
 		}
 		else if (key == GLFW_KEY_A) { // Left
 			for (auto& m : models)
@@ -276,28 +275,28 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 		else if (key == GLFW_KEY_ENTER) { // start
 			is_game = true;
 		}
-		
+
 	}
 	else if (action == GLFW_RELEASE)
 	{
-	if (key == GLFW_KEY_W) { // Upward
-		for (auto& m : models)
-		{
-			m.set_move(3);
+		if (key == GLFW_KEY_W) { // Upward
+			for (auto& m : models)
+			{
+				m.set_move(3);
+			}
 		}
-	}
-	else if (key == GLFW_KEY_A) { // Left
-		for (auto& m : models)
-		{
-			m.set_move(4);
+		else if (key == GLFW_KEY_A) { // Left
+			for (auto& m : models)
+			{
+				m.set_move(4);
+			}
 		}
-	}
-	else if (key == GLFW_KEY_D) { // Right
-		for (auto& m : models)
-		{
-			m.set_move(4);
+		else if (key == GLFW_KEY_D) { // Right
+			for (auto& m : models)
+			{
+				m.set_move(4);
+			}
 		}
-	}
 	}
 }
 
@@ -324,7 +323,7 @@ bool user_init()
 	glClearColor(39 / 255.0f, 40 / 255.0f, 34 / 255.0f, 1.0f);	// set clear color
 	glEnable(GL_CULL_FACE);								// turn on backface culling
 	glEnable(GL_DEPTH_TEST);								// turn on depth tests
-	glEnable(GL_TEXTURE_2D);		
+	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 
 	// modeling background backbone
@@ -333,10 +332,11 @@ bool user_init()
 	bg_update_vertex_buffer(unit_background_vertices);
 
 	sky.init();
-	
-	
+	sky.load();
 
-	
+
+
+
 	// load the mesh
 	pMesh_player = load_model(player_obj);
 	if (pMesh_player == nullptr) { printf("Unable to load mesh\n"); return false; }
