@@ -1,13 +1,3 @@
-/*
-	init(), load()는 user_init()에서 한 번만 해주면 됩니다.
-	render()는 역시 main.cpp의 render()에서 계속 실행해주면 되는데, 아래의 순서만 지키면 됩니다.
-	먼저 Clear한 뒤 skybox를 render하고 그 다음에 다른 program을 사용하면 됩니다.
-
-	1. glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	2. skybox.render();
-	3. glUseProgram(program);
-*/
-
 //    7----6
 //   /|   /|
 //  4----5 |
@@ -32,15 +22,15 @@
 class skybox {
 	// right, left, top, bot, back, front
 	const std::array<std::string, 6> skybox_texture_path = {
-		"../bin/textures/skybox/side2.jpg",
-		"../bin/textures/skybox/side3.jpg",
-		"../bin/textures/skybox/top.jpg",
-		"../bin/textures/skybox/bot.jpg",
-		"../bin/textures/skybox/side0.jpg",
-		"../bin/textures/skybox/side1.jpg" };
+		"textures/skybox/side2.jpg",
+		"textures/skybox/side3.jpg",
+		"textures/skybox/top.jpg",
+		"textures/skybox/bot.jpg",
+		"textures/skybox/side0.jpg",
+		"textures/skybox/side1.jpg" };
 
-	static constexpr char* vert_shader_path = "../bin/shaders/skybox.vert";
-	static constexpr char* frag_shader_path = "../bin/shaders/skybox.frag";
+	static constexpr char* vert_shader_path = "shaders/skybox.vert";
+	static constexpr char* frag_shader_path = "shaders/skybox.frag";
 
 public:
 	void init() {
