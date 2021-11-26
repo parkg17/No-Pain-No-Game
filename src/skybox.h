@@ -20,116 +20,110 @@
 #include "cgut.h"
 
 class skybox {
-	// right, left, top, bot, back, front
-	const std::array<std::string, 6> skybox_texture_path = {
-		"textures/skybox/side2.jpg",
-		"textures/skybox/side3.jpg",
-		"textures/skybox/top.jpg",
-		"textures/skybox/bot.jpg",
-		"textures/skybox/side0.jpg",
-		"textures/skybox/side1.jpg" };
+    // right, left, top, bot, back, front
+    const std::array<std::string, 6> skybox_texture_path = {
+        "textures/skybox/side2.jpg", "textures/skybox/side3.jpg",
+        "textures/skybox/top.jpg", "textures/skybox/bot.jpg",
+        "textures/skybox/side0.jpg", "textures/skybox/side1.jpg"};
 
-	static constexpr char* vert_shader_path = "shaders/skybox.vert";
-	static constexpr char* frag_shader_path = "shaders/skybox.frag";
+    static constexpr char* vert_shader_path = "shaders/skybox.vert";
+    static constexpr char* frag_shader_path = "shaders/skybox.frag";
 
 public:
-	void init() {
-		program = cg_create_program(vert_shader_path, frag_shader_path);
+    void init() {
+        program = cg_create_program(vert_shader_path, frag_shader_path);
 
-		float sv[] = {
-			// positions
-			+1.0f, +1.0f, -1.0f, // 6
-			-1.0f, +1.0f, -1.0f, // 7
-			-1.0f, -1.0f, -1.0f, // 3
-			-1.0f, -1.0f, -1.0f, // 3
-			+1.0f, -1.0f, -1.0f, // 2
-			+1.0f, +1.0f, -1.0f, // 6
+        float sv[] = {           // positions
+            +1.0f, +1.0f, -1.0f, // 6
+            -1.0f, +1.0f, -1.0f, // 7
+            -1.0f, -1.0f, -1.0f, // 3
+            -1.0f, -1.0f, -1.0f, // 3
+            +1.0f, -1.0f, -1.0f, // 2
+            +1.0f, +1.0f, -1.0f, // 6
 
-			-1.0f, -1.0f, +1.0f, // 0
-			-1.0f, -1.0f, -1.0f, // 3
-			-1.0f, +1.0f, -1.0f, // 7
-			-1.0f, +1.0f, -1.0f, // 7
-			-1.0f, +1.0f, +1.0f, // 4
-			-1.0f, -1.0f, +1.0f, // 0
+            -1.0f, -1.0f, +1.0f, // 0
+            -1.0f, -1.0f, -1.0f, // 3
+            -1.0f, +1.0f, -1.0f, // 7
+            -1.0f, +1.0f, -1.0f, // 7
+            -1.0f, +1.0f, +1.0f, // 4
+            -1.0f, -1.0f, +1.0f, // 0
 
-			+1.0f, -1.0f, -1.0f, // 2
-			+1.0f, -1.0f, +1.0f, // 1
-			+1.0f, +1.0f, +1.0f, // 5
-			+1.0f, +1.0f, +1.0f, // 5
-			+1.0f, +1.0f, -1.0f, // 6
-			+1.0f, -1.0f, -1.0f, // 2
+            +1.0f, -1.0f, -1.0f, // 2
+            +1.0f, -1.0f, +1.0f, // 1
+            +1.0f, +1.0f, +1.0f, // 5
+            +1.0f, +1.0f, +1.0f, // 5
+            +1.0f, +1.0f, -1.0f, // 6
+            +1.0f, -1.0f, -1.0f, // 2
 
-			-1.0f, -1.0f, +1.0f, // 0
-			-1.0f, +1.0f, +1.0f, // 4
-			+1.0f, +1.0f, +1.0f, // 5
-			+1.0f, +1.0f, +1.0f, // 5
-			+1.0f, -1.0f, +1.0f, // 1
-			-1.0f, -1.0f, +1.0f, // 0
+            -1.0f, -1.0f, +1.0f, // 0
+            -1.0f, +1.0f, +1.0f, // 4
+            +1.0f, +1.0f, +1.0f, // 5
+            +1.0f, +1.0f, +1.0f, // 5
+            +1.0f, -1.0f, +1.0f, // 1
+            -1.0f, -1.0f, +1.0f, // 0
 
-			-1.0f, +1.0f, -1.0f, // 7
-			+1.0f, +1.0f, -1.0f, // 6
-			+1.0f, +1.0f, +1.0f, // 5
-			+1.0f, +1.0f, +1.0f, // 5
-			-1.0f, +1.0f, +1.0f, // 4
-			-1.0f, +1.0f, -1.0f, // 7
+            -1.0f, +1.0f, -1.0f, // 7
+            +1.0f, +1.0f, -1.0f, // 6
+            +1.0f, +1.0f, +1.0f, // 5
+            +1.0f, +1.0f, +1.0f, // 5
+            -1.0f, +1.0f, +1.0f, // 4
+            -1.0f, +1.0f, -1.0f, // 7
 
-			-1.0f, -1.0f, -1.0f,  // 3
-			-1.0f, -1.0f, +1.0f,  // 0
-			+1.0f, -1.0f, -1.0f,  // 2
-			+1.0f, -1.0f, -1.0f,  // 2
-			-1.0f, -1.0f, +1.0f,  // 0
-			+1.0f, -1.0f, +1.0f }; // 1
+            -1.0f, -1.0f, -1.0f,  // 3
+            -1.0f, -1.0f, +1.0f,  // 0
+            +1.0f, -1.0f, -1.0f,  // 2
+            +1.0f, -1.0f, -1.0f,  // 2
+            -1.0f, -1.0f, +1.0f,  // 0
+            +1.0f, -1.0f, +1.0f}; // 1
 
-		std::array<vertex, sizeof(sv) / sizeof(sv[0]) / 3> vertices;
-		for (size_t i = 0; i != vertices.size(); ++i) {
-			vertices[i].pos = vec3(sv[i * 3], sv[3 * i + 1], sv[3 * i + 2]);
-		}
+        std::array<vertex, sizeof(sv) / sizeof(sv[0]) / 3> vertices;
+        for (size_t i = 0; i != vertices.size(); ++i) {
+            vertices[i].pos = vec3(sv[i * 3], sv[3 * i + 1], sv[3 * i + 2]);
+        }
 
-		glGenBuffers(1, &vertex_buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+        glGenBuffers(1, &vertex_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
-		vertex_array = cg_create_vertex_array(vertex_buffer);
-	}
+        vertex_array = cg_create_vertex_array(vertex_buffer);
 
-	void load() {
-		glGenTextures(1, &cube_map);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map);
+        glGenTextures(1, &cube_map);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map);
 
-		for (int i = 0; i != 6; ++i) {
-			auto img = cg_load_image(skybox_texture_path[i].c_str());
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB8, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->ptr);
-			delete img;
-		}
+        for (int i = 0; i != 6; ++i) {
+            auto img = cg_load_image(skybox_texture_path[i].c_str());
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB8, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->ptr);
+            delete img;
+        }
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	}
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    }
 
-	void render(mat4& viewMatrix, mat4& projMatrix) {
-		glDepthMask(GL_FALSE);
+    void render(mat4& viewMatrix, mat4& projMatrix) {
+        glDepthMask(GL_FALSE);
 
-		glUseProgram(program);
+        glUseProgram(program);
 
-		glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_TRUE, viewMatrix);
-		glUniformMatrix4fv(glGetUniformLocation(program, "projection_matrix"), 1, GL_TRUE, projMatrix);
+        glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_TRUE, viewMatrix);
+        glUniformMatrix4fv(glGetUniformLocation(program, "projection_matrix"), 1, GL_TRUE, projMatrix);
 
-		glBindVertexArray(vertex_array);
+        glBindVertexArray(vertex_array);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map);
-		glUniform1i(glGetUniformLocation(program, "skybox"), 0);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cube_map);
+        glUniform1i(glGetUniformLocation(program, "skybox"), 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glDepthMask(GL_TRUE);
-	}
+        glDepthMask(GL_TRUE);
+    }
 
 private:
-	GLuint vertex_buffer{};
-	GLuint vertex_array{};
-	GLuint program = {};
-	GLuint cube_map = {};
+    GLuint vertex_buffer {};
+    GLuint vertex_array {};
+    GLuint program {};
+    GLuint cube_map {};
 };
