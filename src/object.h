@@ -92,6 +92,9 @@ public:
     void set_scale(const GLfloat scale) { this->scale = scale; }
     void set_rotate(const vec3 axis, const GLfloat angle) { r_mat *= mat4::rotate(axis, angle); }
     void set_location(const vec3 location) { this->location = location; }
+    void set_location(const GLfloat x) { location.x = x; }
+
+    vec3 get_location() const {return location;}
 
     GLfloat get_x_loc() const { return location.x; }
 

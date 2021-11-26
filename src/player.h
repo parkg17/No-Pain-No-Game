@@ -24,6 +24,10 @@ public:
                 a = FLT_MIN;
             }
         }
+        if (x_dir == -1 && on_left == false || x_dir == 1 && on_left == true) {
+            on_left ^= true;
+            set_rotate(vec3(0, 1, 0), PI);
+        }
     }
     void jump() {
         if (a == FLT_MIN) {
@@ -37,4 +41,5 @@ public:
 private:
     GLfloat a = FLT_MIN;
     int x_dir = 0;
+    bool on_left = false;
 };
