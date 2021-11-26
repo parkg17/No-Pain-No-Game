@@ -70,9 +70,9 @@ public:
     }
     void update() {}
     void render(const GLuint program) {
-        // glUseProgram(program);
+        glUseProgram(program);
 
-        const auto model_mat = mat4::translate(location) * mat4::rotate(direction, angle) * mat4::scale(scale);
+        const auto model_mat = mat4::translate(location) * r_mat * mat4::scale(scale);
         glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_TRUE, model_mat);
 
         glBindVertexArray(m.vertex_array);
@@ -86,19 +86,18 @@ public:
             // TODO: color
             glUniform1i(glGetUniformLocation(program, "MODE"), 0);
         }
-
         glDrawElements(GL_TRIANGLES, m.index_list.size(), GL_UNSIGNED_INT, nullptr);
-
-        // glUseProgram(0);
     }
 
     void set_scale(const GLfloat scale) { this->scale = scale; }
-    void set_angle(const GLfloat angle) { this->angle = angle; }
-    void set_direction(const vec3 direction) { this->direction = direction; }
+    void set_rotate(const vec3 axis, const GLfloat angle) { r_mat *= mat4::rotate(axis, angle); }
     void set_location(const vec3 location) { this->location = location; }
 
-private:
+    GLfloat get_x_loc() const { return location.x; }
+
+protected:
     mesh m {};
-    GLfloat scale = 1.f, angle {};
-    vec3 direction {}, location {};
+    GLfloat scale = 1.f;
+    mat4 r_mat = mat4();
+    vec3 location {};
 };
