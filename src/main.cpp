@@ -10,9 +10,9 @@
 #include "goal.h"     // goal
 #include "light.h"    // light
 #include "material.h" // material
-#include "model.h"    // model(player)
 #include "object.h"
 #include "obstacle.h" // Obstacle
+#include "model.h"    // model(player)
 #include "player.h"
 #include "skybox.h" // skybox
 #include "trackball.h"
