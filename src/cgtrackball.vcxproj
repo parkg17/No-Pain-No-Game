@@ -89,6 +89,8 @@
     <ClInclude Include="trackball.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\bin\shaders\dark.frag" />
+    <None Include="..\bin\shaders\dark.vert" />
     <None Include="..\bin\shaders\skybox.frag" />
     <None Include="..\bin\shaders\skybox.vert" />
     <None Include="..\bin\shaders\text.frag" />

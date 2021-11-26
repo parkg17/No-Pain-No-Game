@@ -7,7 +7,6 @@
 #include "model.h"	
 
 
-
 void render_player(float t, std::vector<background_t>& backgrounds, std::vector<enemy_t>& enemies,
 	std::vector<obstacle_t>& obstacles, std::vector<goal_t>& goal, std::vector<model_t>& models, GLuint program, mesh2* pMesh_player)
 {
@@ -22,6 +21,7 @@ void render_player(float t, std::vector<background_t>& backgrounds, std::vector<
 		GLint uloc;
 		uloc = glGetUniformLocation(program, "solid_color");		if (uloc > -1) glUniform4fv(uloc, 1, m.color);	// pointer version
 		uloc = glGetUniformLocation(program, "model_matrix");		if (uloc > -1) glUniformMatrix4fv(uloc, 1, GL_TRUE, m.model_matrix);
+
 		glUniform1i(glGetUniformLocation(program, "MODE"), 0);
 		glBindVertexArray(pMesh_player->vertex_array);
 		for (size_t k = 0, kn = pMesh_player->geometry_list.size(); k < kn; k++) {

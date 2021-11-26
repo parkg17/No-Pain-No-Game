@@ -2,6 +2,8 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
+#include "object.h"
+
 struct model_t
 {
 	vec3	center = vec3(0);		// 2D position for translation

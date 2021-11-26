@@ -74,7 +74,7 @@ public:
 
         const auto model_mat = mat4::translate(location) * r_mat * mat4::scale(scale);
         glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_TRUE, model_mat);
-
+        glUniform4fv(glGetUniformLocation(program, "material_position"), 1, get_location());
         glBindVertexArray(m.vertex_array);
 
         if (m.texture) {

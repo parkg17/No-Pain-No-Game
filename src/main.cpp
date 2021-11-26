@@ -21,6 +21,8 @@
 // global constants - shader
 static const char* vert_shader_path = "shaders/trackball.vert";
 static const char* frag_shader_path = "shaders/trackball.frag";
+static const char* dark_vert_shader_path = "shaders/dark.vert";
+static const char* dark_frag_shader_path = "shaders/dark.frag";
 static const char* window_name = "No Pain No Game";
 
 //*************************************
@@ -44,7 +46,9 @@ ivec2 window_size = cg_default_window_size(); // initial window size
 
 //*************************************
 // OpenGL objects
+GLuint now_program = 0;
 GLuint program = 0;         // ID holder for GPU program
+GLuint program_dark = 0;
 GLuint bg_vertex_array = 0; // ID holder for vertex array object
 GLuint Background = 0;
 
@@ -85,6 +89,7 @@ std::vector<GLfloat> spike_loc;
 GLfloat flag_loc;
 
 int level = 0;
+int light_num = 2;
 
 //*************************************
 // render function
@@ -100,6 +105,8 @@ bool init_help();
 void render_help();
 void render_title();
 
+std::vector<vertex> unit_background_vertices;
+auto backgrounds = std::move(create_backgrounds());
 //*************************************
 // holder of vertices and indices of a unit circle
 // std::vector<vertex> unit_background_vertices;
@@ -117,62 +124,102 @@ void update() {
 
     player.update(delta_time);
     cam.update(player.get_x_loc());
-
-    glUseProgram(program);
-
+    cam.aspect = window_size.x / float(window_size.y);
+    cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
     // update global simulation parameter
     t = float(glfwGetTime()) * 0.4f;
 
-    cam.aspect = window_size.x / float(window_size.y);
-    cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
 
-    // update common uniform variables in vertex/fragment shaders
-    glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_TRUE, cam.view_matrix);
-    glUniformMatrix4fv(glGetUniformLocation(program, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
+    if (level % 2 == 0) // Bright Stage
+    { 
+        glUseProgram(program);
 
-    // setup light properties
-    glUniform4fv(glGetUniformLocation(program, "light_position"), 1, light.position[0]);
-    glUniform4fv(glGetUniformLocation(program, "Ia"), 1, light.ambient);
-    glUniform4fv(glGetUniformLocation(program, "Id"), 1, light.diffuse);
-    glUniform4fv(glGetUniformLocation(program, "Is"), 1, light.specular);
+        // update common uniform variables in vertex/fragment shaders
+        glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_TRUE, cam.view_matrix);
+        glUniformMatrix4fv(glGetUniformLocation(program, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
 
-    // setup material properties
-    glUniform4fv(glGetUniformLocation(program, "Ka"), 1, material.ambient);
-    glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material.diffuse);
-    glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material.specular);
-    glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
+        // setup light properties
+        glUniform4fv(glGetUniformLocation(program, "light_position"), 1, light.position[0]);
+        glUniform4fv(glGetUniformLocation(program, "Ia"), 1, light.ambient);
+        glUniform4fv(glGetUniformLocation(program, "Id"), 1, light.diffuse);
+        glUniform4fv(glGetUniformLocation(program, "Is"), 1, light.specular);
+
+        // setup material properties
+        glUniform4fv(glGetUniformLocation(program, "Ka"), 1, material.ambient);
+        glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material.diffuse);
+        glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material.specular);
+        glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
+    }
+    else // Dark Side
+    { 
+        glUseProgram(program_dark);
+
+        // update common uniform variables in vertex/fragment shaders
+        glUniformMatrix4fv(glGetUniformLocation(program_dark, "view_matrix"), 1, GL_TRUE, cam.view_matrix);
+        glUniformMatrix4fv(glGetUniformLocation(program_dark, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
+
+        // setup light properties
+        glUniform1i(glGetUniformLocation(program_dark, "light_num"), light_num);
+        glUniform4fv(glGetUniformLocation(program_dark, "light_position"), 1, light.position[1]);
+        glUniform4fv(glGetUniformLocation(program_dark, "light_position2"), 1, light.position[2]);
+        glUniform4fv(glGetUniformLocation(program_dark, "Ia"), 1, light.ambient);
+        glUniform4fv(glGetUniformLocation(program_dark, "Id"), 1, light.diffuse);
+        glUniform4fv(glGetUniformLocation(program_dark, "Is"), 1, light.specular);
+
+        glUniform1f(glGetUniformLocation(program_dark, "constant"), light.constant);
+        glUniform1f(glGetUniformLocation(program_dark, "linear"), light.linear);
+        glUniform1f(glGetUniformLocation(program_dark, "quadratic"), light.quadratic);
+
+        // setup material properties
+        glUniform4fv(glGetUniformLocation(program_dark, "Ka"), 1, material.ambient);
+        glUniform4fv(glGetUniformLocation(program_dark, "Kd"), 1, material.diffuse);
+        glUniform4fv(glGetUniformLocation(program_dark, "Ks"), 1, material.specular);
+        glUniform1f(glGetUniformLocation(program_dark, "shininess"), material.shininess);
+    }
 }
 
 void render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (is_game == true && is_help == false) {
-        sky.render(cam.view_matrix, cam.projection_matrix);
-    }
     float dpi_scale = cg_get_dpi_scale();
 
     // notify GL that we use our own program
-    glUseProgram(program);
+    if (level % 2 == 0) // Bright Stage
+    {
+        if (is_game == true && is_help == false) {
+            sky.render(cam.view_matrix, cam.projection_matrix);
+        }
+        now_program = program;
+    }
+    else
+    {
+        now_program = program_dark;
+        glUseProgram(now_program);
+        render_bg(t, backgrounds, now_program, Background, bg_vertex_array);
+    }
+
+    glUseProgram(now_program);
     if (is_game == true && is_help == false) {
+
         // render_bg(t, backgrounds, program, Background, bg_vertex_array);
-        player.render(program);
+        player.render(now_program);
         {
             for (const auto& x : spike_loc) {
                 spike.set_location(x);
-                spike.render(program);
+                spike.render(now_program);
             }
         }
         for (int x = -TILE_X; x <= TILE_X; ++x) {
             tile.set_location(vec3(1 / TILE_SCALE * x, -10, -50));
-            tile.render(program);
+            tile.render(now_program);
             tile.set_location(vec3(1 / TILE_SCALE * x, -10, -30));
-            tile.render(program);
+            tile.render(now_program);
         }
-        flag.render(program);
-    } else {
+        flag.render(now_program);
+    } 
+    else {
         if (is_help) render_help();
-        else
-            render_title();
+        else render_title();
     }
 
     glfwSwapBuffers(window);
@@ -182,8 +229,11 @@ void restart_level() {
     player.set_location(vec3(-20, -10, -25));
     switch (level) {
     case 0: spike_loc = {-10, 0, 30}; break;
-    case 1: spike_loc = {-10, 0, 20, 35}; break;
-    case 2: spike_loc = {}; break;
+    case 1: spike_loc = { -10, 0, 30 }; break;
+    case 2: spike_loc = {-10, 0, 20, 35}; break;
+    case 3: spike_loc = {-10, 0, 20, 35 }; break;
+    case 4: spike_loc = {}; break;
+    case 5: spike_loc = {}; break;
     default: assert(false);
     }
 }
@@ -361,7 +411,7 @@ bool user_init() {
 
     // init GL states
     glLineWidth(1.0f);
-    glClearColor(39 / 255.0f, 40 / 255.0f, 34 / 255.0f, 1.0f); // set clear color
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // set clear color
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);  // turn on backface culling
     glEnable(GL_DEPTH_TEST); // turn on depth tests
@@ -372,8 +422,8 @@ bool user_init() {
     // modeling background backbone
     Background = cg_create_texture(background_path, true);
     if (!Background) return false;
-    // unit_background_vertices = std::move(create_background());
-    // bg_update_vertex_buffer(unit_background_vertices);
+    unit_background_vertices = std::move(create_background());
+    bg_update_vertex_buffer(unit_background_vertices);
 
     if (!init_text()) return false;
     if (!init_help()) return false;
@@ -425,6 +475,11 @@ int main(int argc, char* argv[]) {
 
     // initializations and validations of GLSL program
     if (!(program = cg_create_program(vert_shader_path, frag_shader_path))) {
+        glfwTerminate();
+        return 1;
+    } // create and compile shaders/program
+    // initializations and validations of GLSL program
+    if (!(program_dark = cg_create_program(dark_vert_shader_path, dark_frag_shader_path))) {
         glfwTerminate();
         return 1;
     } // create and compile shaders/program

@@ -129,5 +129,11 @@
     <None Include="..\bin\shaders\text.vert">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="..\bin\shaders\dark.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\bin\shaders\dark.vert">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

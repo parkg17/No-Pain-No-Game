@@ -17,12 +17,13 @@ struct background_t
 
 inline std::vector<background_t> create_backgrounds()
 {
-	int num_cnt = 1;
+	int num_cnt = 0;
 	std::vector<background_t> bg;
 	std::vector<background_t> b(1);
 
-	/* Declare 9 Planets */
-	b[0] = { vec3(-3.7f,-1.8f,-2.0f), -2.0f, 2.0f, -1.1f, 1.1f };
+
+	b[num_cnt++] = { vec3(-50.0f, -50.0f, -28.0f), -2.0f, 2.0f, -1.1f, 1.1f };
+	//b[num_cnt++] = { vec3(15.0f, 0.0f, -22.0f), -2.0f, 2.0f, -1.1f, 1.1f };
 	for (int idx = 0; idx < num_cnt; ++idx) {
 		bg.emplace_back(b[idx]);
 	}
@@ -31,7 +32,7 @@ inline std::vector<background_t> create_backgrounds()
 
 inline void background_t::update(float t)
 {
-	float size = 4.0f;
+	float size = 200.0f;
 	mat4 scale_matrix =
 	{
 		size, 0, 0, 0,
