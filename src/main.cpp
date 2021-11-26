@@ -131,7 +131,7 @@ void update() {
     glUniformMatrix4fv(glGetUniformLocation(program, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
 
     // setup light properties
-    glUniform4fv(glGetUniformLocation(program, "light_position"), 1, light.position);
+    glUniform4fv(glGetUniformLocation(program, "light_position"), 1, light.position[0]);
     glUniform4fv(glGetUniformLocation(program, "Ia"), 1, light.ambient);
     glUniform4fv(glGetUniformLocation(program, "Id"), 1, light.diffuse);
     glUniform4fv(glGetUniformLocation(program, "Is"), 1, light.specular);
