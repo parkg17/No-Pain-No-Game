@@ -59,7 +59,7 @@ double last_time;           // time variable to run the program by time not fram
 bool b_index_buffer = true; // use index buffering?
 bool is_game = false;
 bool is_help = false;
-float blinking = 0.0f;
+
 bool press_shift, press_ctrl;
 
 #ifndef GL_ES_VERSION_2_0
@@ -91,7 +91,10 @@ void render_block(float t, std::vector<block_t>& blocks, GLuint program, mesh2* 
 void render_player(float t, std::vector<background_t>& backgrounds, std::vector<enemy_t>& enemies, std::vector<obstacle_t>& obstacles, std::vector<goal_t>& goal, std::vector<model_t>& models, GLuint program, mesh2* pMesh_player);
 
 bool init_text();
-void render_text(std::string text, GLint x, GLint y, GLfloat scale, vec4 color, GLfloat dpi_scale = 1.0f);
+bool init_help();
+void render_help();
+void render_title();
+
 
 //*************************************
 // holder of vertices and indices of a unit circle
@@ -115,7 +118,7 @@ void update() {
 
 	// update global simulation parameter
 	t = float(glfwGetTime()) * 0.4f;
-	blinking = abs(sin(float(glfwGetTime()) * 2.5f));
+	
 
 	cam.aspect = window_size.x / float(window_size.y);
 	cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
@@ -160,17 +163,8 @@ void render() {
 		flag.render(program);
 	}
 	else {
-		if (is_help) {
-			render_text("No Pain No Game!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
-			render_text("W to Jump A to move left D to move right", 100, 200, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f),
-				dpi_scale);
-			render_text("Press F1 to title", 100, 300, 0.6f, vec4(0.5f, 0.7f, 0.7f, 1.0f), dpi_scale);
-		}
-		else {
-			render_text("No Pain No Game!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
-			render_text("Press F1 to show help", 100, 200, 0.6f, vec4(1.0f, 0.8f, 0.1f, 0.4f), dpi_scale);
-			render_text("Press Enter to start game", 100, 600, 0.6f, vec4(0.5f, 0.7f, 0.7f, blinking), dpi_scale);
-		}
+		if (is_help) render_help();
+        	else render_title();
 	}
 
 	glfwSwapBuffers(window);
@@ -367,6 +361,7 @@ bool user_init() {
 	// bg_update_vertex_buffer(unit_background_vertices);
 
 	if (!init_text()) return false;
+	if (!init_help()) return false;
 
 	sky.init();
 
