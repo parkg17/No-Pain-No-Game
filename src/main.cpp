@@ -366,6 +366,11 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
         if (key == GLFW_KEY_ESCAPE)
             glfwSetWindowShouldClose(window, GL_TRUE);
         else if (key == GLFW_KEY_R) { // Added key with Reset fucntion
+            is_game = false;
+            reset = true;
+            render();
+            Sleep(2000);
+            is_game = true;
             restart_level();
             printf("> reset game\n");
         } else if (key == GLFW_KEY_Z) {
