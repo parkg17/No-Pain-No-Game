@@ -1,0 +1,14 @@
+# Aspose.3D Wavefront OBJ Exporter
+# Copyright 2004-2021 Aspose Pty Ltd.
+# File created: 11/27/2021 09:36:43
+
+newmtl Drops
+	Ka 1 1 1
+	Kd 1 1 1
+	d 1
+	Tr 0
+	illum 2
+	Ks 0.89999997615814208 0.89999997615814208 0.89999997615814208
+	Ns 2
+	map_Kd F:\M n B\_MESH\D mesh\Drops\DropsAlbedo.png
+	map_Ks F:\M n B\_MESH\D mesh\Drops\DropsRough.png

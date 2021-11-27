@@ -10,10 +10,12 @@
 #include "goal.h"     // goal
 #include "light.h"    // light
 #include "material.h" // material
+#include "model.h"    // model(player)
 #include "object.h"
 #include "obstacle.h" // Obstacle
-#include "model.h"    // model(player)
+// #include "particle_system.h"
 #include "player.h"
+#include "sawblade.h"
 #include "skybox.h" // skybox
 #include "sound.h"
 #include "trackball.h"
@@ -49,7 +51,7 @@ ivec2 window_size = cg_default_window_size(); // initial window size
 //*************************************
 // OpenGL objects
 GLuint now_program = 0;
-GLuint program = 0;         // ID holder for GPU program
+GLuint program = 0; // ID holder for GPU program
 GLuint program_dark = 0;
 GLuint bg_vertex_array = 0; // ID holder for vertex array object
 GLuint Background = 0;
@@ -85,7 +87,9 @@ camera cam;
 skybox sky;
 object_t spike, tile, flag;
 player_t player;
+sawblade_t sawblade;
 trackball tb;
+// particle_system raining;
 
 std::vector<GLfloat> spike_loc;
 GLfloat flag_loc;
@@ -124,21 +128,27 @@ auto backgrounds = std::move(create_backgrounds());
 // auto backgrounds = std::move(create_backgrounds());
 // auto goal = std::move(create_goal());
 
+bool level_saw() { return level == 2 || level == 3 || level == 6 || level == 7; }
+bool level_rain() { return level >= 4; }
+
 //*************************************
 void update() {
     const auto current_time = glfwGetTime();
     const auto delta_time = static_cast<float>(current_time - std::exchange(last_time, current_time));
 
     player.update(delta_time);
+    if (level_saw()) sawblade.update(delta_time);
+    // if (level_rain()) raining.update(delta_time);
+
     cam.update(player.get_x_loc());
     cam.aspect = window_size.x / float(window_size.y);
     cam.projection_matrix = mat4::perspective(cam.fovy, cam.aspect, cam.dnear, cam.dfar);
+
     // update global simulation parameter
     t = float(glfwGetTime()) * 0.4f;
 
-
     if (level % 2 == 0) // Bright Stage
-    { 
+    {
         glUseProgram(program);
 
         // update common uniform variables in vertex/fragment shaders
@@ -156,9 +166,8 @@ void update() {
         glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material.diffuse);
         glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material.specular);
         glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
-    }
-    else // Dark Side
-    { 
+    } else // Dark Side
+    {
         glUseProgram(program_dark);
 
         // update common uniform variables in vertex/fragment shaders
@@ -197,9 +206,7 @@ void render() {
             sky.render(cam.view_matrix, cam.projection_matrix);
         }
         now_program = program;
-    }
-    else
-    {
+    } else {
         now_program = program_dark;
         glUseProgram(now_program);
         render_bg(t, backgrounds, now_program, Background, bg_vertex_array);
@@ -207,28 +214,32 @@ void render() {
 
     glUseProgram(now_program);
     if (is_game == true && is_help == false) {
-
         // render_bg(t, backgrounds, program, Background, bg_vertex_array);
         player.render(now_program);
-        {
-            for (const auto& x : spike_loc) {
-                spike.set_location(x);
-                spike.render(now_program);
-            }
+        for (const auto& x : spike_loc) {
+            spike.set_location(x);
+            spike.render(now_program);
         }
-        for (int x = -TILE_X; x <= TILE_X; ++x) {
+        if (level_saw()) sawblade.render(now_program);
+        // if (level_rain()) ;
+
+        for (int x = -TILE_X; x <= 2 * TILE_X; ++x) {
             tile.set_location(vec3(1 / TILE_SCALE * x, -10, -50));
             tile.render(now_program);
             tile.set_location(vec3(1 / TILE_SCALE * x, -10, -30));
             tile.render(now_program);
         }
         flag.render(now_program);
-    } 
-    else {
+    } else {
         if (is_help) render_help();
+<<<<<<< HEAD
+        else
+            render_title();
+=======
         else if (lose()) render_lose();
         else if (win()) render_win(level);
         else render_title();
+>>>>>>> f2a92314c92822d563e6710c0f4f721b32ff952b
     }
 
     glfwSwapBuffers(window);
@@ -236,13 +247,29 @@ void render() {
 
 void restart_level() {
     player.set_location(vec3(-20, -10, -25));
+    if (level_saw()) sawblade.set_location(vec3(40, 4, -25));
+
     switch (level) {
-    case 0: spike_loc = {-10, 0, 30}; break;
-    case 1: spike_loc = { -10, 0, 30 }; break;
-    case 2: spike_loc = {-10, 0, 20, 35}; break;
-    case 3: spike_loc = {-10, 0, 20, 35 }; break;
-    case 4: spike_loc = {}; break;
-    case 5: spike_loc = {}; break;
+    case 0:
+    case 1:
+        spike_loc = {-10, 0, 30};
+        flag.set_location(vec3(60, -10, -25));
+        break;
+    case 2:
+    case 3:
+        spike_loc = {0, 20, 35, 45, 55};
+        flag.set_location(vec3(80, -10, -25));
+        break;
+    case 4:
+    case 5:
+        spike_loc = {-10, 5, 20, 35, 60, 70, 80};
+        flag.set_location(vec3(100, -10, -25));
+        break;
+    case 6:
+    case 7:
+        spike_loc = {-10, 5, 20, 35, 60, 80, 90, 110};
+        flag.set_location(vec3(120, -10, -25));
+        break;
     default: assert(false);
     }
 }
@@ -325,6 +352,8 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
         else if (key == GLFW_KEY_R) { // Added key with Reset fucntion
             restart_level();
             printf("> reset game\n");
+        } else if (key == GLFW_KEY_Z) {
+            player.set_location(flag.get_location());
         }
 #ifndef GL_ES_VERSION_2_0
         else if (key == GLFW_KEY_P) {
@@ -407,10 +436,15 @@ bool win() {
 }
 
 bool lose() {
-    if (player.get_location().y > -8.f) return false;
-    for (const auto& x : spike_loc) {
-        if (fabs(player.get_x_loc() - x) < 3.f) return true;
+    if (player.get_location().y < -8.f) {
+        for (const auto& x : spike_loc) {
+            if (fabs(player.get_x_loc() - x) < 3.f) return true;
+        }
     }
+    if (level_saw() && player.get_location().y > -4.f && fabs(player.get_x_loc() - sawblade.get_x_loc()) < 3.f) {
+        return true;
+    }
+    // if (player.get_location().y > -8.f) return false;
     return false;
 }
 
@@ -438,6 +472,7 @@ bool user_init() {
     if (!init_help()) return false;
 
     sky.init();
+    // raining.init();
 
     spike.init("../bin/mesh/spike/spike.obj", "../bin/mesh/spike/spike.png");
     spike.set_scale(0.1f);
@@ -455,6 +490,11 @@ bool user_init() {
     player.set_scale(3.f);
     player.set_rotate(vec3(0, 1, 0), PI / 2);
     player.set_location(vec3(-20, -10, -25));
+
+    sawblade.init("../bin/mesh/sawblade/sawblade.obj", "../bin/mesh/sawblade/sawblade.png");
+    sawblade.set_scale(0.05f);
+    sawblade.set_rotate(vec3(1, 0, 0), -PI / 2);
+    sawblade.set_player(&player);
 
     last_time = glfwGetTime();
 
@@ -516,6 +556,9 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
+<<<<<<< HEAD
+            if (level == 8) return 0;
+=======
             if (level == 6)
             {
                 is_game = false;                
@@ -527,6 +570,7 @@ int main(int argc, char* argv[]) {
             render();
             Sleep(2000);
             is_game = true;
+>>>>>>> f2a92314c92822d563e6710c0f4f721b32ff952b
             restart_level();
         } else if (lose()) {
             is_game = false;            

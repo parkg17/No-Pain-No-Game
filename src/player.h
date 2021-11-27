@@ -8,7 +8,7 @@
 #include <iostream>
 
 class player_t : public object_t {
-    static constexpr GLfloat X_MIN = -20.f, X_MAX = 60.f;
+    static constexpr GLfloat X_MIN = -20.f, X_MAX = 150.f;
     static constexpr GLfloat Y_MIN = -10.f;
 
 public:

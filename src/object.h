@@ -69,7 +69,7 @@ public:
         m.vertex_array = cg_create_vertex_array(m.vertex_buffer, m.index_buffer);
     }
     void update() {}
-    void render(const GLuint program) {
+    void render(const GLuint program) const {
         glUseProgram(program);
 
         const auto model_mat = mat4::translate(location) * r_mat * mat4::scale(scale);
@@ -90,11 +90,11 @@ public:
     }
 
     void set_scale(const GLfloat scale) { this->scale = scale; }
-    void set_rotate(const vec3 axis, const GLfloat angle) { r_mat *= mat4::rotate(axis, angle); }
+    void set_rotate(const vec3 axis, const GLfloat angle) { r_mat = mat4::rotate(axis, angle) * r_mat; }
     void set_location(const vec3 location) { this->location = location; }
     void set_location(const GLfloat x) { location.x = x; }
 
-    vec3 get_location() const {return location;}
+    vec3 get_location() const { return location; }
 
     GLfloat get_x_loc() const { return location.x; }
 

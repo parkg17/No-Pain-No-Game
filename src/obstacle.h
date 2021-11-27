@@ -1,7 +1,4 @@
 #pragma once
-#ifndef __OBSTACLE_H__
-#define __OBSTACLE_H__
-
 
 
 struct obstacle_t
@@ -23,10 +20,10 @@ inline std::vector<obstacle_t> create_obstacles()
 	std::vector<obstacle_t> obstacles;
 	std::vector<obstacle_t> o(4);
 
-	o[num_cnt++] = { vec3(-1.7f, -1.0f, 0), 0.1f * size_factor};
-	o[num_cnt++] = { vec3(-0.5f, -0.4f, 0), 0.1f * size_factor};
-	o[num_cnt++] = { vec3(0.3f, -1.0f, 0), 0.2f * size_factor};
-	o[num_cnt++] = { vec3(0.4f, 0.6f, 0), 0.1f * size_factor};
+	o[num_cnt++] = { vec3(-1.7f, -1.0f, 0), 0.1f * size_factor };
+	o[num_cnt++] = { vec3(-0.5f, -0.4f, 0), 0.1f * size_factor };
+	o[num_cnt++] = { vec3(0.3f, -1.0f, 0), 0.2f * size_factor };
+	o[num_cnt++] = { vec3(0.4f, 0.6f, 0), 0.1f * size_factor };
 	for (int idx = 0; idx < num_cnt; ++idx) {
 		obstacles.emplace_back(o[idx]);
 	}
@@ -54,4 +51,3 @@ inline void obstacle_t::update(float t)
 
 	model_matrix = translate_matrix * scale_matrix;
 }
-#endif
