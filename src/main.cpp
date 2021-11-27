@@ -172,7 +172,7 @@ void update() {
         glUniformMatrix4fv(glGetUniformLocation(program_dark, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
 
         // setup light properties
-        if (level >= 6) {
+        if (level >= 4) {
             glUniform1i(glGetUniformLocation(program_dark, "light_num"), light_num);
             glUniform4fv(glGetUniformLocation(program_dark, "light_position"), 1, light.position[1]);
             glUniform4fv(glGetUniformLocation(program_dark, "light_position2"), 1, light.position[4]);
