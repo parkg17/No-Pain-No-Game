@@ -106,6 +106,11 @@ bool init_text();
 bool init_help();
 void render_help();
 void render_title();
+void render_win(int level);
+void render_lose();
+
+bool win();
+bool lose();
 
 std::vector<vertex> unit_background_vertices;
 auto backgrounds = std::move(create_backgrounds());
@@ -221,6 +226,8 @@ void render() {
     } 
     else {
         if (is_help) render_help();
+        else if (lose()) render_lose();
+        else if (win()) render_win(level);
         else render_title();
     }
 
@@ -311,19 +318,11 @@ void bg_update_vertex_buffer(const std::vector<vertex>& vertices) {
     }
 }
 
-void reset_game() {
-    // for (auto& m : models) {
-    //     m.center = vec3(-2.0f, -1.0f, 0);
-    //     m.is_stop = false;
-    // }
-}
-
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
         if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)
             glfwSetWindowShouldClose(window, GL_TRUE);
         else if (key == GLFW_KEY_R) { // Added key with Reset fucntion
-            // reset_game();
             restart_level();
             printf("> reset game\n");
         }
@@ -334,6 +333,14 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
             printf("> using %s mode\n", b_wireframe ? "wireframe" : "solid");
         }
 #endif
+        else if (key == GLFW_KEY_KP_ADD) {
+            printf("sound little up\n");
+            up_sound();
+        }
+        else if (key == GLFW_KEY_KP_SUBTRACT) {
+            printf("sound little down\n");
+            down_sound();
+        }
         else if (key == GLFW_KEY_W) { // Upward
             player.jump();
         } else if (key == GLFW_KEY_A) { // Left
@@ -509,9 +516,22 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
-            if (level == 6) return 0;
+            if (level == 6)
+            {
+                is_game = false;
+                render();
+                return 0;
+            }
+            is_game = false;
+            render();
+            Sleep(2000);
+            is_game = true;
             restart_level();
         } else if (lose()) {
+            is_game = false;            
+            render();
+            Sleep(2000);
+            is_game = true;      
             restart_level();
         }
     }
