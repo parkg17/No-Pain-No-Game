@@ -12,9 +12,14 @@ in vec2 tc;
 out vec4 fragColor;
 
 uniform sampler2D	TEX0;
+uniform sampler2D	TEX1;
+uniform int			mode;
+
 
 
 void main()
 {	
-	fragColor = texture( TEX0, tc ); 	
+	if(mode == 0) fragColor = texture( TEX0, tc );
+	else if (mode == 1) fragColor = texture( TEX1, tc );
+	
 }
