@@ -39,17 +39,15 @@ vec4 phong( vec3 l, vec3 n, vec3 h, vec4 Kd, vec4 Ia_att, vec4 Id_att, vec4 Is_a
 
 void main()
 {
-	
-	
-	float distance = sqrt((light_position[0]-material_position[0])*(light_position[0]-material_position[0]) + 
-			(light_position[1]-material_position[1])*(light_position[1]-material_position[1]) + 
-			(light_position[2]-material_position[2])*(light_position[2]-material_position[2]));
+	float distance = sqrt( pow(light_position[0]-material_position[0], 2)+
+						   pow(light_position[1]-material_position[1], 2)+
+					       pow(light_position[2]-material_position[2], 2));
 	float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance * distance));
 
+	float distance2 = sqrt( pow(light_position2[0]-material_position[0], 2)+
+						    pow(light_position2[1]-material_position[1], 2)+
+					        pow(light_position2[2]-material_position[2], 2));
 
-	float distance2 = sqrt((light_position2[0]-material_position[0])*(light_position2[0]-material_position[0]) + 
-			(light_position2[1]-material_position[1])*(light_position2[1]-material_position[1]) + 
-			(light_position2[2]-material_position[2])*(light_position2[2]-material_position[2]));
 	float attenuation2 = 1.0 / (constant + linear * distance2 + quadratic * (distance2 * distance2 * distance2));
 
 	// light position in the eye space
