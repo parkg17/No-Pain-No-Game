@@ -4,7 +4,7 @@ irrklang::ISoundEngine* engine = nullptr;
 irrklang::ISoundSource* sound_src = nullptr;
 const char* sound_path = "../bin/sound/sound.mp3";
 
-float sound_volume = 0.2f;
+float sound_volume = 0.15f;
 
 bool init_sound() {
 	engine = irrklang::createIrrKlangDevice();

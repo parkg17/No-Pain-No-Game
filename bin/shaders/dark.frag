@@ -18,7 +18,7 @@ uniform mat4	view_matrix;
 uniform float	shininess;
 uniform float	constant, linear, quadratic;
 uniform vec4	Ia, Id, Is;	// light
-uniform vec4	light_position, light_position2;
+uniform vec4	light_position, light_position2, light_position3, light_position4, light_position5;
 uniform vec4	material_position, Ka, Kd, Ks;					// material properties
 uniform int		light_num;
 
@@ -39,39 +39,40 @@ vec4 phong( vec3 l, vec3 n, vec3 h, vec4 Kd, vec4 Ia_att, vec4 Id_att, vec4 Is_a
 
 void main()
 {
-	float distance = sqrt( pow(light_position[0]-material_position[0], 2)+
-						   pow(light_position[1]-material_position[1], 2)+
-					       pow(light_position[2]-material_position[2], 2));
-	float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance * distance));
+	vec4 light_p[5];
+	vec4 lpos, iKd;
+	vec3 n, p, l, v, h;
+	float distance[5];
+	float att[5]; // attenuation
 
-	float distance2 = sqrt( pow(light_position2[0]-material_position[0], 2)+
-						    pow(light_position2[1]-material_position[1], 2)+
-					        pow(light_position2[2]-material_position[2], 2));
+	light_p[0] = light_position;
+	light_p[1] = light_position2;
+	light_p[2] = light_position3;
+	light_p[3] = light_position4;
+	light_p[4] = light_position5;
 
-	float attenuation2 = 1.0 / (constant + linear * distance2 + quadratic * (distance2 * distance2 * distance2));
+	for(int idx = 0; idx < light_num; ++idx) {
+		distance[idx] = sqrt( pow(light_p[idx][0]-material_position[0], 2)+
+						      pow(light_p[idx][1]-material_position[1], 2)+
+					          pow(light_p[idx][2]-material_position[2], 2));
+		att[idx] = 1.0 / (constant + linear * distance[idx] + quadratic * pow(distance[idx], 3) );
 
-	// light position in the eye space
-	vec4 lpos = view_matrix*light_position;
-	vec4 lpos2 = view_matrix*light_position2;
+		// Shading
+		lpos = view_matrix * light_p[idx];
+		n = normalize(norm);	// norm interpolated via rasterizer should be normalized again here
+		p = epos.xyz;			// 3D position of this fragment
+		l = normalize(lpos.xyz-(lpos.a==0.0?vec3(0):p));	// lpos.a==0 means directional light
+		v = normalize(-p);		// eye-epos = vec3(0)-epos
+		h = normalize(l+v);	// the halfway vector
 
-	// Shading
-	vec3 n = normalize(norm);	// norm interpolated via rasterizer should be normalized again here
-	vec3 p = epos.xyz;			// 3D position of this fragment
-	vec3 l = normalize(lpos.xyz-(lpos.a==0.0?vec3(0):p));	// lpos.a==0 means directional light
-	vec3 l2 = normalize(lpos2.xyz-(lpos2.a==0.0?vec3(0):p));	// lpos.a==0 means directional light
-	vec3 v = normalize(-p);		// eye-epos = vec3(0)-epos
-	vec3 h = normalize(l+v);	// the halfway vector
-	vec3 h2 = normalize(l2+v);	// the halfway vector
-
-	if(MODE == 0) { // Texture Doesn't exists
-		fragColor = phong( l, n, h, Kd, Ia * attenuation, Id * attenuation, Is * attenuation)/light_num;
-		fragColor += phong( l2, n, h2, Kd, Ia * attenuation2, Id * attenuation2, Is * attenuation2)/light_num;
-	}
-	else { // Texture exists
-		vec4 iKd = texture( TEX, tc );
-		fragColor = iKd;
-		fragColor = phong( l, n, h, iKd, Ia * attenuation, Id * attenuation, Is * attenuation)/light_num;
-		fragColor += phong( l2, n, h2, iKd, Ia * attenuation2, Id * attenuation2, Is * attenuation2)/light_num;
-	}
-	
+		if(MODE == 0) { // Texture Doesn't exists
+			if(idx == 0) fragColor = phong( l, n, h, Kd, Ia * att[idx], Id * att[idx], Is * att[idx])/light_num;
+			else fragColor += phong( l, n, h, Kd, Ia * att[idx], Id * att[idx], Is * att[idx])/light_num;
+		}
+		else { // Texture exists
+			iKd = texture( TEX, tc );
+			if(idx == 0) fragColor = phong( l, n, h, iKd, Ia * att[idx], Id * att[idx], Is * att[idx])/light_num;
+			else fragColor += phong( l, n, h, iKd, Ia * att[idx], Id * att[idx], Is * att[idx])/light_num;
+		}
+	} 
 }

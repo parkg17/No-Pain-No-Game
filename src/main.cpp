@@ -162,7 +162,8 @@ void update() {
         glUniform4fv(glGetUniformLocation(program, "Kd"), 1, material.diffuse);
         glUniform4fv(glGetUniformLocation(program, "Ks"), 1, material.specular);
         glUniform1f(glGetUniformLocation(program, "shininess"), material.shininess);
-    } else // Dark Side
+    } 
+    else // Dark Side
     {
         glUseProgram(program_dark);
 
@@ -171,9 +172,23 @@ void update() {
         glUniformMatrix4fv(glGetUniformLocation(program_dark, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
 
         // setup light properties
-        glUniform1i(glGetUniformLocation(program_dark, "light_num"), light_num);
-        glUniform4fv(glGetUniformLocation(program_dark, "light_position"), 1, light.position[1]);
-        glUniform4fv(glGetUniformLocation(program_dark, "light_position2"), 1, light.position[2]);
+        if (level >= 6) {
+            glUniform1i(glGetUniformLocation(program_dark, "light_num"), light_num);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position"), 1, light.position[1]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position2"), 1, light.position[4]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position3"), 1, light.position[3]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position4"), 1, light.position[0]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position5"), 1, light.position[5]);
+        }
+        else {
+            glUniform1i(glGetUniformLocation(program_dark, "light_num"), light_num);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position"), 1, light.position[1]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position2"), 1, light.position[2]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position3"), 1, light.position[3]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position4"), 1, light.position[4]);
+            glUniform4fv(glGetUniformLocation(program_dark, "light_position5"), 1, light.position[5]);
+        }
+
         glUniform4fv(glGetUniformLocation(program_dark, "Ia"), 1, light.ambient);
         glUniform4fv(glGetUniformLocation(program_dark, "Id"), 1, light.diffuse);
         glUniform4fv(glGetUniformLocation(program_dark, "Is"), 1, light.specular);
@@ -205,7 +220,7 @@ void render() {
     } else {
         now_program = program_dark;
         glUseProgram(now_program);
-        render_bg(t, backgrounds, now_program, Background, bg_vertex_array);
+        //render_bg(t, backgrounds, now_program, Background, bg_vertex_array);
     }
 
     glUseProgram(now_program);
@@ -359,10 +374,15 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
         else if (key == GLFW_KEY_KP_ADD) {
             printf("sound little up\n");
             up_sound();
-        } else if (key == GLFW_KEY_KP_SUBTRACT) {
+        } 
+        else if (key == GLFW_KEY_KP_SUBTRACT) {
             printf("sound little down\n");
             down_sound();
-        } else if (key == GLFW_KEY_W) { // Upward
+        }
+        else if (key == GLFW_KEY_M) {
+            finalize_sound();
+        }
+        else if (key == GLFW_KEY_W) { // Upward
             player.jump();
         } else if (key == GLFW_KEY_A) { // Left
             if (!slide() || !player.x_dir) {
@@ -558,12 +578,20 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
-            if (level == 8) return 0;
+            if (level == 3) light_num = 3;
+
+            if (level == 8) {
+                is_game = false;
+                render();
+                Sleep(2000);
+                return 0;
+            }
             is_game = false;
             render();
             Sleep(2000);
             is_game = true;
             restart_level();
+
         } else if (lose()) {
             is_game = false;
             render();
