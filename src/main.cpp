@@ -106,6 +106,11 @@ bool init_text();
 bool init_help();
 void render_help();
 void render_title();
+void render_win(int level);
+void render_lose();
+
+bool win();
+bool lose();
 
 std::vector<vertex> unit_background_vertices;
 auto backgrounds = std::move(create_backgrounds());
@@ -221,6 +226,8 @@ void render() {
     } 
     else {
         if (is_help) render_help();
+        else if (lose()) render_lose();
+        else if (win()) render_win(level);
         else render_title();
     }
 
@@ -509,9 +516,22 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
-            if (level == 6) return 0;
+            if (level == 6)
+            {
+                is_game = false;
+                render();
+                return 0;
+            }
+            is_game = false;
+            render();
+            Sleep(2000);
+            is_game = true;
             restart_level();
         } else if (lose()) {
+            is_game = false;            
+            render();
+            Sleep(2000);
+            is_game = true;      
             restart_level();
         }
     }
