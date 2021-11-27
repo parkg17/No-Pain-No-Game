@@ -13,7 +13,7 @@
 #include "model.h"    // model(player)
 #include "object.h"
 #include "obstacle.h" // Obstacle
-// #include "particle_system.h"
+#include "particle_system.h"
 #include "player.h"
 #include "sawblade.h"
 #include "skybox.h" // skybox
@@ -89,7 +89,9 @@ object_t spike, tile, flag;
 player_t player;
 sawblade_t sawblade;
 trackball tb;
-// particle_system raining;
+particle_system raining;
+
+object_t drop;
 
 std::vector<GLfloat> spike_loc;
 GLfloat flag_loc;
@@ -130,6 +132,9 @@ auto backgrounds = std::move(create_backgrounds());
 
 bool level_saw() { return level == 2 || level == 3 || level == 6 || level == 7; }
 bool level_rain() { return level >= 4; }
+bool slide() {
+    return level_rain() && fabs(player.get_x_loc() - raining.rain.get_x_loc()) < 5.f;
+}
 
 //*************************************
 void update() {
@@ -138,7 +143,7 @@ void update() {
 
     player.update(delta_time);
     if (level_saw()) sawblade.update(delta_time);
-    // if (level_rain()) raining.update(delta_time);
+    if (level_rain()) raining.update(delta_time);
 
     cam.update(player.get_x_loc());
     cam.aspect = window_size.x / float(window_size.y);
@@ -214,6 +219,7 @@ void render() {
 
     glUseProgram(now_program);
     if (is_game == true && is_help == false) {
+        drop.render(now_program);
         // render_bg(t, backgrounds, program, Background, bg_vertex_array);
         player.render(now_program);
         for (const auto& x : spike_loc) {
@@ -221,7 +227,7 @@ void render() {
             spike.render(now_program);
         }
         if (level_saw()) sawblade.render(now_program);
-        // if (level_rain()) ;
+        if (level_rain()) raining.render(now_program);
 
         for (int x = -TILE_X; x <= 2 * TILE_X; ++x) {
             tile.set_location(vec3(1 / TILE_SCALE * x, -10, -50));
@@ -232,9 +238,12 @@ void render() {
         flag.render(now_program);
     } else {
         if (is_help) render_help();
-        else if (lose()) render_lose();
-        else if (win()) render_win(level);
-        else render_title();
+        else
+            render_title();
+
+        if (lose()) render_lose();
+        else if (win())
+            render_win(level);
     }
 
     glfwSwapBuffers(window);
@@ -262,7 +271,7 @@ void restart_level() {
         break;
     case 6:
     case 7:
-        spike_loc = {-10, 5, 20, 35, 60, 80, 90, 110};
+        spike_loc = {-10, 5, 20, 45, 55, 65, 90, 100};
         flag.set_location(vec3(120, -10, -25));
         break;
     default: assert(false);
@@ -360,17 +369,19 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
         else if (key == GLFW_KEY_KP_ADD) {
             printf("sound little up\n");
             up_sound();
-        }
-        else if (key == GLFW_KEY_KP_SUBTRACT) {
+        } else if (key == GLFW_KEY_KP_SUBTRACT) {
             printf("sound little down\n");
             down_sound();
-        }
-        else if (key == GLFW_KEY_W) { // Upward
+        } else if (key == GLFW_KEY_W) { // Upward
             player.jump();
         } else if (key == GLFW_KEY_A) { // Left
-            player.set_x_dir(-1);
+            if (!slide() || !player.x_dir) {
+                player.set_x_dir(-1);
+            }
         } else if (key == GLFW_KEY_D) { // Right
-            player.set_x_dir(1);
+            if (!slide() || !player.x_dir) {
+                player.set_x_dir(1);
+            }
         } else if (key == GLFW_KEY_ENTER && is_help == false) { // start
             is_game = true;
         } else if (key == GLFW_KEY_F1) { // help
@@ -384,9 +395,13 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
         }
     } else if (action == GLFW_RELEASE) {
         if (key == GLFW_KEY_A) { // Left
-            player.set_x_dir(0);
+            if (!slide()) {
+                player.set_x_dir(0);
+            }
         } else if (key == GLFW_KEY_D) { // Right
-            player.set_x_dir(0);
+            if (!slide()) {
+                player.set_x_dir(0);
+            }
         } else if (key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) {
             press_shift = false;
         } else if (key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL) {
@@ -467,7 +482,7 @@ bool user_init() {
     if (!init_help()) return false;
 
     sky.init();
-    // raining.init();
+    raining.init();
 
     spike.init("../bin/mesh/spike/spike.obj", "../bin/mesh/spike/spike.png");
     spike.set_scale(0.1f);
@@ -490,6 +505,8 @@ bool user_init() {
     sawblade.set_scale(0.05f);
     sawblade.set_rotate(vec3(1, 0, 0), -PI / 2);
     sawblade.set_player(&player);
+
+    drop.init("../bin/mesh/rain/rain.obj", "../bin/mesh/rain/rain.jpeg");
 
     last_time = glfwGetTime();
 
@@ -551,25 +568,17 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
-            if (level == 8)
-            {
-                is_game = false;                
-                render();
-                Sleep(2000);
-                return 0;
-            }
+            if (level == 8) return 0;
             is_game = false;
             render();
             Sleep(2000);
             is_game = true;
             restart_level();
-        }
-        else if (lose())
-        {
-            is_game = false;            
+        } else if (lose()) {
+            is_game = false;
             render();
             Sleep(2000);
-            is_game = true;      
+            is_game = true;
             restart_level();
         }
     }

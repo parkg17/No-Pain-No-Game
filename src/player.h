@@ -37,9 +37,9 @@ public:
     void set_x_dir(const int d) {
         x_dir = d;
     }
+    int x_dir = 0;
 
 private:
     GLfloat a = FLT_MIN;
-    int x_dir = 0;
     bool on_left = false;
 };
