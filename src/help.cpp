@@ -29,6 +29,14 @@ void render_text(std::string text, GLint x, GLint y, GLfloat scale, vec4 color, 
 void render_help_img();
 void render_win_lose_img();
 
+void render_reset(int level)
+{
+	std::string text = std::to_string(level+1);
+	std::string next_ = "Level ";
+	text = next_ + text;
+
+	render_text(text, 470, 360, 1.3f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
+}
 void render_win(int level)
 {	
 	int level_front = (level + 2) / 2;
