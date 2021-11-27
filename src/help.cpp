@@ -66,7 +66,9 @@ void render_help()
 	render_text("No Pain No Game!", 100, 100, 1.0f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
 	render_text("W to Jump A to move left D to move right", 100, 200, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f),
 		dpi_scale);
-	render_text("First time, You should remember the obstacles on the map! ", 100, 300, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f),
+	render_text("Q to go previous stage R to reset stage", 100, 266, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f),
+		dpi_scale);
+	render_text("First time, You should remember the obstacles on the map! ", 100, 333, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f),
 		dpi_scale);
 	render_text("Second time, You will pass through the map to avoid invisible obstacles.", 100, 400, 0.6f, vec4(1.0f, 0.8f, 0.6f, 0.7f),
 		dpi_scale);
