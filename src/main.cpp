@@ -519,6 +519,7 @@ int main(int argc, char* argv[]) {
             if (level == 6)
             {
                 is_game = false;
+                Sleep(2000);
                 render();
                 return 0;
             }
