@@ -31,9 +31,9 @@ void render_win_lose_img();
 
 void render_reset(int level)
 {
-	std::string text = std::to_string(level+1);
-	std::string next_ = "Level ";
-	text = next_ + text;
+	int level_front = (level + 2) / 2;
+	int level_back  = level% 2 + 1;
+	std::string text = std::to_string(level_front) + "-" + std::to_string(level_back);
 
 	render_text(text, 470, 360, 1.3f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
 }
