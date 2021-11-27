@@ -232,14 +232,9 @@ void render() {
         flag.render(now_program);
     } else {
         if (is_help) render_help();
-<<<<<<< HEAD
-        else
-            render_title();
-=======
         else if (lose()) render_lose();
         else if (win()) render_win(level);
         else render_title();
->>>>>>> f2a92314c92822d563e6710c0f4f721b32ff952b
     }
 
     glfwSwapBuffers(window);
@@ -556,10 +551,7 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
-<<<<<<< HEAD
-            if (level == 8) return 0;
-=======
-            if (level == 6)
+            if (level == 8)
             {
                 is_game = false;                
                 render();
@@ -570,9 +562,10 @@ int main(int argc, char* argv[]) {
             render();
             Sleep(2000);
             is_game = true;
->>>>>>> f2a92314c92822d563e6710c0f4f721b32ff952b
             restart_level();
-        } else if (lose()) {
+        }
+        else if (lose())
+        {
             is_game = false;            
             render();
             Sleep(2000);
