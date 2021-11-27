@@ -518,9 +518,9 @@ int main(int argc, char* argv[]) {
             ++level;
             if (level == 6)
             {
-                is_game = false;
-                Sleep(2000);
+                is_game = false;                
                 render();
+                Sleep(2000);
                 return 0;
             }
             is_game = false;
