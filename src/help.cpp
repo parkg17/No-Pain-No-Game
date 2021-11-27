@@ -47,6 +47,7 @@ void render_win(int level)
 
 	if (level == 8) {
 		text = " Clear!";
+		render_win_lose_img();
 	}
 	else {		
 		std::string next_ = "Level ";
