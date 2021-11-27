@@ -516,7 +516,7 @@ bool user_init() {
     sawblade.set_rotate(vec3(1, 0, 0), -PI / 2);
     sawblade.set_player(&player);
 
-    drop.init("../bin/mesh/rain/rain.obj", "../bin/mesh/rain/rain.jpeg");
+    drop.init("../bin/mesh/rain/rain.obj", "../bin/mesh/rain/rain.png");
 
     last_time = glfwGetTime();
 

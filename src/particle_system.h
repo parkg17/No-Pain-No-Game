@@ -48,7 +48,7 @@ private:
 
 public:
     void init() {
-        rain.init("../bin/mesh/rain/rain.obj", nullptr);
+        rain.init("../bin/mesh/rain/rain.obj", "../bin/mesh/rain/rain.png");
         for (auto& x : particles) {
             x.init(true);
         }
