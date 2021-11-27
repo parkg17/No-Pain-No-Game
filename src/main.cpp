@@ -276,7 +276,7 @@ void restart_level() {
         break;
     case 6:
     case 7:
-        spike_loc = {-10, 5, 20, 45, 55, 65, 90, 100};
+        spike_loc = {-10, 5, 20, 45, 55, 75, 90, 100};
         flag.set_location(vec3(120, -10, -25));
         break;
     default: assert(false);
