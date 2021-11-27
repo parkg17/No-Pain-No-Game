@@ -32,7 +32,7 @@ void render_win_lose_img();
 void render_win(int level)
 {	
 	std::string text = std::to_string(level + 1);
-	if (level == 6) {
+	if (level == 8) {
 		text = " Clear!";
 	}
 	else {		
