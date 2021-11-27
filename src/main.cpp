@@ -15,7 +15,9 @@
 #include "model.h"    // model(player)
 #include "player.h"
 #include "skybox.h" // skybox
+#include "sound.h"
 #include "trackball.h"
+#pragma comment(lib, "irrKlang.lib")
 
 //*************************************
 // global constants - shader
@@ -449,12 +451,16 @@ bool user_init() {
 
     last_time = glfwGetTime();
 
+    init_sound();
+    play_sound();
+
     restart_level();
 
     return true;
 }
 
 void user_finalize() {
+    finalize_sound();
     delete_texture_cache();
     delete pMesh_player;
     delete pMesh_thorn;
@@ -503,7 +509,7 @@ int main(int argc, char* argv[]) {
 
         if (win()) {
             ++level;
-            if (level == 3) return 0;
+            if (level == 6) return 0;
             restart_level();
         } else if (lose()) {
             restart_level();

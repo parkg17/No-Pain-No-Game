@@ -21,9 +21,7 @@ inline std::vector<background_t> create_backgrounds()
 	std::vector<background_t> bg;
 	std::vector<background_t> b(1);
 
-
 	b[num_cnt++] = { vec3(-50.0f, -50.0f, -28.0f), -2.0f, 2.0f, -1.1f, 1.1f };
-	//b[num_cnt++] = { vec3(15.0f, 0.0f, -22.0f), -2.0f, 2.0f, -1.1f, 1.1f };
 	for (int idx = 0; idx < num_cnt; ++idx) {
 		bg.emplace_back(b[idx]);
 	}
