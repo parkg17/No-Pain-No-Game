@@ -67,6 +67,7 @@ double last_time;           // time variable to run the program by time not fram
 bool b_index_buffer = true; // use index buffering?
 bool is_game = false;
 bool is_help = false;
+bool reset = false;
 
 bool press_shift, press_ctrl;
 
@@ -114,6 +115,7 @@ void render_help();
 void render_title();
 void render_win(int level);
 void render_lose();
+void render_reset(int level);
 
 bool win();
 bool lose();
@@ -247,6 +249,11 @@ void render() {
         else if (lose()) render_lose();
         else if (win())
             render_win(level);
+        else if (reset)
+        {
+            reset = false;
+            render_reset(level);
+        }
         else
             render_title();
     }
@@ -356,7 +363,7 @@ void bg_update_vertex_buffer(const std::vector<vertex>& vertices) {
 
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
-        if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)
+        if (key == GLFW_KEY_ESCAPE)
             glfwSetWindowShouldClose(window, GL_TRUE);
         else if (key == GLFW_KEY_R) { // Added key with Reset fucntion
             restart_level();
@@ -381,6 +388,19 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
         }
         else if (key == GLFW_KEY_M) {
             finalize_sound();
+        }
+        else if (key == GLFW_KEY_Q)
+        {
+            if (level > 0)
+            {
+                --level;
+                is_game = false;
+                reset = true;
+                render();
+                Sleep(2000);
+                is_game = true;
+                restart_level();
+            }
         }
         else if (key == GLFW_KEY_W) { // Upward
             player.jump();
