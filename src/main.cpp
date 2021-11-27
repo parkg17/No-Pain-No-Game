@@ -120,15 +120,6 @@ bool lose();
 
 std::vector<vertex> unit_background_vertices;
 auto backgrounds = std::move(create_backgrounds());
-//*************************************
-// holder of vertices and indices of a unit circle
-// std::vector<vertex> unit_background_vertices;
-// auto obstacles = std::move(create_obstacles());
-// auto models = std::move(create_models());
-// auto enemies = std::move(create_enemies());
-// auto blocks = std::move(create_blocks());
-// auto backgrounds = std::move(create_backgrounds());
-// auto goal = std::move(create_goal());
 
 bool level_saw() { return level == 2 || level == 3 || level == 6 || level == 7; }
 bool level_rain() { return level >= 4; }
@@ -238,12 +229,11 @@ void render() {
         flag.render(now_program);
     } else {
         if (is_help) render_help();
-        else
-            render_title();
-
-        if (lose()) render_lose();
+        else if (lose()) render_lose();
         else if (win())
             render_win(level);
+        else
+            render_title();
     }
 
     glfwSwapBuffers(window);
