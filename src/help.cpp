@@ -34,6 +34,8 @@ void render_reset(int level)
 	int level_front = (level + 2) / 2;
 	int level_back  = level% 2 + 1;
 	std::string text = std::to_string(level_front) + "-" + std::to_string(level_back);
+	std::string next_ = "Level ";
+	text = next_ + text;
 
 	render_text(text, 470, 360, 1.3f, vec4(0.5f, 0.8f, 0.2f, 1.0f), dpi_scale);
 }
