@@ -2,21 +2,21 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "assimp_loader.h"
 #include "background.h"
-#include "block.h"    // blocks
-#include "camera.h"   // camera
-#include "cgmath.h"   // slee's simple math library
-#include "cgut2.h"    // slee's OpenGL utility
-#include "enemy.h"    // enemy
-#include "goal.h"     // goal
-#include "light.h"    // light
-#include "material.h" // material
-#include "model.h"    // model(player)
+#include "block.h"      // blocks
+#include "camera.h"     // camera
+#include "cgmath.h"     // slee's simple math library
+#include "cgut2.h"      // slee's OpenGL utility
+#include "enemy.h"      // enemy
+#include "goal.h"       // goal
+#include "light.h"       // light
+#include "material.h"   // material
+#include "model.h"      // model(player)
 #include "object.h"
-#include "obstacle.h" // Obstacle
+#include "obstacle.h"   // Obstacle
 #include "particle_system.h"
 #include "player.h"
-#include "sawblade.h"
-#include "skybox.h" // skybox
+#include "sawblade.h"   // Sawblade
+#include "skybox.h"     // skybox
 #include "sound.h"
 #include "trackball.h"
 #pragma comment(lib, "irrKlang.lib")
@@ -56,8 +56,6 @@ GLuint program_dark = 0;
 GLuint bg_vertex_array = 0; // ID holder for vertex array object
 GLuint Background = 0;
 
-// background_t backgrounds;
-
 //*************************************
 // global variables
 int frame = 0;  // index of rendering frames
@@ -68,7 +66,6 @@ bool b_index_buffer = true; // use index buffering?
 bool is_game = false;
 bool is_help = false;
 bool reset = false;
-
 bool press_shift, press_ctrl;
 
 #ifndef GL_ES_VERSION_2_0
@@ -91,12 +88,13 @@ player_t player;
 sawblade_t sawblade;
 trackball tb;
 particle_system raining;
-
 object_t drop;
-
 std::vector<GLfloat> spike_loc;
 GLfloat flag_loc;
 
+
+//*************************************
+// Game Variable
 int level = 0;
 int light_num = 2;
 
@@ -108,21 +106,20 @@ void render_enemy(float t, std::vector<enemy_t>& enemies, GLuint program, mesh2*
 void render_goal(float t, std::vector<goal_t>& goal, GLuint program, mesh2* pMesh_goal);
 void render_block(float t, std::vector<block_t>& blocks, GLuint program, mesh2* pMesh_cube);
 void render_player(float t, std::vector<background_t>& backgrounds, std::vector<enemy_t>& enemies, std::vector<obstacle_t>& obstacles, std::vector<goal_t>& goal, std::vector<model_t>& models, GLuint program, mesh2* pMesh_player);
-
-bool init_text();
-bool init_help();
 void render_help();
 void render_title();
 void render_win(int level);
 void render_lose();
 void render_reset(int level);
-
+bool init_text();
+bool init_help();
 bool win();
 bool lose();
 
+//*************************************
+// Object Declaration
 std::vector<vertex> unit_background_vertices;
 auto backgrounds = std::move(create_backgrounds());
-
 bool level_saw() { return level == 2 || level == 3 || level == 6 || level == 7; }
 bool level_rain() { return level >= 4; }
 bool slide() {
@@ -173,7 +170,7 @@ void update() {
         glUniformMatrix4fv(glGetUniformLocation(program_dark, "view_matrix"), 1, GL_TRUE, cam.view_matrix);
         glUniformMatrix4fv(glGetUniformLocation(program_dark, "projection_matrix"), 1, GL_TRUE, cam.projection_matrix);
 
-        // setup light properties
+        // setup light posotions
         if (level >= 4) {
             glUniform1i(glGetUniformLocation(program_dark, "light_num"), light_num);
             glUniform4fv(glGetUniformLocation(program_dark, "light_position"), 1, light.position[1]);
@@ -191,10 +188,10 @@ void update() {
             glUniform4fv(glGetUniformLocation(program_dark, "light_position5"), 1, light.position[5]);
         }
 
+        // setup light properties
         glUniform4fv(glGetUniformLocation(program_dark, "Ia"), 1, light.ambient);
         glUniform4fv(glGetUniformLocation(program_dark, "Id"), 1, light.diffuse);
         glUniform4fv(glGetUniformLocation(program_dark, "Is"), 1, light.specular);
-
         glUniform1f(glGetUniformLocation(program_dark, "constant"), light.constant);
         glUniform1f(glGetUniformLocation(program_dark, "linear"), light.linear);
         glUniform1f(glGetUniformLocation(program_dark, "quadratic"), light.quadratic);
@@ -228,7 +225,6 @@ void render() {
     glUseProgram(now_program);
     if (is_game == true && is_help == false) {
         drop.render(now_program);
-        // render_bg(t, backgrounds, program, Background, bg_vertex_array);
         player.render(now_program);
         for (const auto& x : spike_loc) {
             spike.set_location(x);
@@ -330,7 +326,6 @@ void bg_update_vertex_buffer(const std::vector<vertex>& vertices) {
         return;
     }
 
-    /* Reuse My Sphere Code */
     // Making Sphere using index buffer
     std::vector<uint> indices;
     indices.push_back(0);
@@ -391,10 +386,10 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods) {
             printf("sound little down\n");
             down_sound();
         }
-        else if (key == GLFW_KEY_M) {
+        else if (key == GLFW_KEY_M) {   // Mute Music
             finalize_sound();
         }
-        else if (key == GLFW_KEY_Q)
+        else if (key == GLFW_KEY_Q)     // Return Previous Stage
         {
             if (level > 0)
             {
@@ -489,7 +484,6 @@ bool lose() {
     if (level_saw() && player.get_location().y > -4.f && fabs(player.get_x_loc() - sawblade.get_x_loc()) < 3.f) {
         return true;
     }
-    // if (player.get_location().y > -8.f) return false;
     return false;
 }
 
