@@ -12,7 +12,7 @@
 
 We developed a game that avoids obstacles and reaches the goal in a 2D environment. Unlike games that are generally played, two stages are organized into one round. The first level passes when we reach the goal point avoiding obstacles, such as a typical game. The second level passes through the obstacles on the dark map by remembering the positions of the obstacles on the first level in the presence of limited light sources. The basic movement is W to jump A to move left D to move right. you can press the Q key to go to the previous stage to remember the map again, or press the R key to quickly restart the current map.
 
-## Graphical (NO Text-Only) Help with ‘F1’ Key
+## Graphical (NO Text Only) Help with ‘F1’ Key
 ![image](https://user-images.githubusercontent.com/38035440/143734948-537298fb-663e-46e4-b133-46fe1282edb5.png)
 
 In the help window, there is a rough description of the game and how to play it.
@@ -55,3 +55,15 @@ When the R key is pressed in the middle of the game, information on the current 
 
 
 ![ex3](https://user-images.githubusercontent.com/38908136/176224284-fed4dacc-38ce-4040-88c3-c8d64c957f2c.png)
+
+
+***
+
+### Deleted File by @Copyright
+ - cgut.h
+ - cgmath.h
+ - stb_image.h
+ - stb_truetype.h
+ - tiny_obj_loader.h
+ - makefile
+ - cgtrackball.sln
