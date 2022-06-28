@@ -1,6 +1,5 @@
 # No-Pain-No-Game
 [Computer Graphics] Project: 3D Game
-# No pain No Gain
 
 ## Game title
 ![image](https://user-images.githubusercontent.com/38035440/143734938-eee4086f-da97-465f-a7db-9bc75edc652c.png)
