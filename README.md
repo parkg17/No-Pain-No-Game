@@ -67,3 +67,5 @@ When the R key is pressed in the middle of the game, information on the current 
  - tiny_obj_loader.h
  - makefile
  - cgtrackball.sln
+ - consola.ttf
+ - exe file
